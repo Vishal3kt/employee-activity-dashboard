@@ -11,59 +11,81 @@ import {
 } from '@azure/msal-angular';
 
 
-// Dynamic redirect URL
-const redirectUri = window.location.origin;
+// Environment based redirect URI
+
+const redirectUri =
+  window.location.hostname === 'localhost'
+    ? 'http://localhost:4200'
+    : 'https://employee-activity-dashboard.vercel.app';
 
 
-export const msalInstance = new PublicClientApplication({
 
-  auth: {
+export const msalInstance =
+  new PublicClientApplication({
 
-    clientId: 'bffdfedc-9405-4d28-89a9-bef27f0e25ff',
+    auth: {
 
-    authority:
-      'https://login.microsoftonline.com/818467cf-44b9-45a5-a41a-1ef924fcd795',
+      clientId:
+        'bffdfedc-9405-4d28-89a9-bef27f0e25ff',
 
-    redirectUri: redirectUri,
-
-    postLogoutRedirectUri: redirectUri
-
-  },
+      authority:
+        'https://login.microsoftonline.com/818467cf-44b9-45a5-a41a-1ef924fcd795',
 
 
-  cache: {
-
-    cacheLocation: BrowserCacheLocation.LocalStorage
-
-  },
+      redirectUri: redirectUri,
 
 
-  system: {
+      postLogoutRedirectUri: redirectUri
 
-    loggerOptions: {
+    },
 
-      logLevel: LogLevel.Info,
 
-      loggerCallback(level, message) {
+    cache: {
 
-        console.log(message);
+      cacheLocation:
+        BrowserCacheLocation.LocalStorage
+
+    },
+
+
+    system: {
+
+      loggerOptions: {
+
+        logLevel:
+          LogLevel.Info,
+
+
+        loggerCallback:
+          (level, message) => {
+
+            console.log(
+              `[MSAL ${LogLevel[level]}]`,
+              message
+            );
+
+          }
 
       }
 
     }
 
-  }
-
 });
 
 
 
+
+
+// Microsoft Graph Protected Resources
+
 export const protectedResources = {
+
 
   graph: {
 
     endpoint:
       'https://graph.microsoft.com/v1.0/',
+
 
     scopes: [
 
@@ -77,34 +99,52 @@ export const protectedResources = {
 
   }
 
+
 };
 
 
 
 
+
+
+
+// MSAL Guard Configuration
+
 export function MSALGuardConfig():
 
 MsalGuardConfiguration {
 
+
   return {
+
 
     interactionType:
       InteractionType.Redirect,
 
+
     authRequest: {
+
 
       scopes:
         protectedResources.graph.scopes
 
+
     }
 
+
   };
+
 
 }
 
 
 
 
+
+
+
+
+// MSAL HTTP Interceptor Configuration
 
 export function MSALInterceptorConfig():
 
@@ -113,6 +153,7 @@ MsalInterceptorConfiguration {
 
   const protectedResourceMap =
     new Map<string, Array<string>>();
+
 
 
 
@@ -126,12 +167,16 @@ MsalInterceptorConfiguration {
 
 
 
+
   return {
+
 
     interactionType:
       InteractionType.Redirect,
 
+
     protectedResourceMap
+
 
   };
 
