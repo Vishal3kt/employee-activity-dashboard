@@ -1,0 +1,29 @@
+<app-header></app-header>
+
+<app-dashboard-cards
+    [employees]="employees">
+</app-dashboard-cards>
+
+<div class="charts">
+
+    <app-login-trend
+        [employees]="employees">
+    </app-login-trend>
+
+    <app-browser-chart
+        [employees]="employees">
+    </app-browser-chart>
+
+    <app-application-chart
+        [employees]="employees">
+    </app-application-chart>
+
+    <app-city-chart
+        [employees]="employees">
+    </app-city-chart>
+
+</div>
+
+<app-employee-table
+    [employees]="employees">
+</app-employee-table>

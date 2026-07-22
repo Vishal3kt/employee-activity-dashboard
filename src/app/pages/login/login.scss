@@ -1,0 +1,21 @@
+.login-page{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#f4f7fb;
+}
+
+.login-card{
+    width:420px;
+    padding:40px;
+    background:white;
+    border-radius:15px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+button{
+    margin-top:25px;
+    width:100%;
+}
