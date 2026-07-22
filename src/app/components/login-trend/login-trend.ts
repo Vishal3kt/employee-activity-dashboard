@@ -1,10 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import * as Highcharts from 'highcharts';
-
-// import { HighchartsChartModule } from 'highcharts-angular';
-
 import { EmployeeActivity } from '../../models/employee.model';
 
 @Component({
@@ -12,7 +8,6 @@ import { EmployeeActivity } from '../../models/employee.model';
   standalone: true,
   imports: [
     CommonModule,
-    // HighchartsChartModule
   ],
   templateUrl: './login-trend.html'
 })
@@ -20,10 +15,6 @@ export class LoginTrend implements OnChanges {
 
   @Input()
   employees: EmployeeActivity[] = [];
-
-  Highcharts = Highcharts;
-
-  chartOptions: Highcharts.Options = {};
 
   ngOnChanges() {
 
@@ -41,29 +32,29 @@ export class LoginTrend implements OnChanges {
 
     });
 
-    this.chartOptions = {
+    // this.chartOptions = {
 
-      title: {
-        text: 'Login Trend'
-      },
+    //   title: {
+    //     text: 'Login Trend'
+    //   },
 
-      xAxis: {
-        categories: [...data.keys()]
-      },
+    //   xAxis: {
+    //     categories: [...data.keys()]
+    //   },
 
-      series: [
+    //   series: [
 
-        {
+    //     {
 
-          type: 'column',
+    //       type: 'column',
 
-          data: [...data.values()]
+    //       data: [...data.values()]
 
-        }
+    //     }
 
-      ]
+    //   ]
 
-    };
+    // };
 
   }
 
