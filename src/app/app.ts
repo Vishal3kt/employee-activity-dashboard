@@ -18,17 +18,27 @@ export class App implements OnInit {
 
   ngOnInit() {
 
-    const accounts = this.msal.instance.getAllAccounts();
+    this.msal.instance.handleRedirectPromise()
+      .then((response) => {
 
-    console.log("Accounts on startup:", accounts);
+        console.log('Redirect response:', response);
 
-    if (accounts.length > 0) {
+        const accounts = this.msal.instance.getAllAccounts();
 
-      this.msal.instance.setActiveAccount(accounts[0]);
+        console.log('Accounts:', accounts);
 
-      this.router.navigate(['/dashboard']);
+        if (accounts.length > 0) {
 
-    }
+          this.msal.instance.setActiveAccount(accounts[0]);
+
+          this.router.navigate(['/dashboard']);
+
+        }
+
+      })
+      .catch(err => {
+        console.error('MSAL error:', err);
+      });
 
   }
 

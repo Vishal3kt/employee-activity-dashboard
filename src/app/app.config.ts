@@ -6,8 +6,10 @@ import {
 import {
   provideHttpClient,
   withInterceptorsFromDi,
-  HTTP_INTERCEPTORS
+  HTTP_INTERCEPTORS,
 } from '@angular/common/http';
+import { MsalRedirectComponent } from '@azure/msal-angular';
+
 
 import { provideRouter } from '@angular/router';
 
@@ -63,7 +65,7 @@ export const appConfig: ApplicationConfig = {
 
     MsalService,
     MsalGuard,
-    MsalBroadcastService
-
+    MsalBroadcastService,
+MsalRedirectComponent 
   ]
 };
