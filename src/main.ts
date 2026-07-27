@@ -8,12 +8,10 @@ async function bootstrap() {
 
   await msalInstance.initialize();
 
-  const result = await msalInstance.handleRedirectPromise();
-
-  console.log('MSAL Redirect Result:', result);
+  await msalInstance.handleRedirectPromise();
 
   bootstrapApplication(App, appConfig)
-    .catch(err => console.error(err));
+    .catch(console.error);
 
 }
 

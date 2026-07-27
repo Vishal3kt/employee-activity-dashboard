@@ -130,3 +130,20 @@
   }
 
 }
+
+.clickable {
+  cursor: pointer;
+  transition: .25s;
+}
+
+.clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+}
+
+.content small {
+  display: block;
+  margin-top: 6px;
+  color: #1976d2;
+  font-weight: 600;
+}

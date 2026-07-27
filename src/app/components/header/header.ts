@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-header',
@@ -12,14 +14,16 @@ import { MatIconModule } from '@angular/material/icon';
     CommonModule,
     MatToolbarModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatInputModule,
+    MatFormFieldModule
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss'
 })
 export class Header {
 
-  @Input() userName = 'Guest';
+  @Input() userName = 'Administrator';
 
   lastUpdated = new Date();
 

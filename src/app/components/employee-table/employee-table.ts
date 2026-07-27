@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   Input,
   OnChanges,
@@ -19,7 +20,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 
 import { EmployeeActivity } from '../../models/employee.model';
-
+import { MatDialog } from '@angular/material/dialog';
+import { EmployeeDetails } from '../employee-details/employee-details';
 @Component({
   selector: 'app-employee-table',
   standalone: true,
@@ -38,9 +40,33 @@ import { EmployeeActivity } from '../../models/employee.model';
   templateUrl: './employee-table.html',
   styleUrl: './employee-table.scss'
 })
-export class EmployeeTable implements OnChanges, AfterViewInit {
+export class EmployeeTable implements AfterViewInit {
 
-  @Input() employees: EmployeeActivity[] = [];
+private _employees: EmployeeActivity[] = [];
+
+@Input()
+set employees(value: EmployeeActivity[]) {
+
+  this._employees = value || [];
+
+   this.refreshTable();
+
+  this.dataSource.data = this._employees;
+
+  if (this.paginator) {
+    this.dataSource.paginator = this.paginator;
+  }
+
+  if (this.sort) {
+    this.dataSource.sort = this.sort;
+  }
+}
+
+get employees() {
+  return this._employees;
+}
+  @Input()
+selectedApplication = '';
 
   search = '';
 
@@ -58,52 +84,104 @@ export class EmployeeTable implements OnChanges, AfterViewInit {
 
   dataSource = new MatTableDataSource<EmployeeActivity>();
 
+constructor(
+  private dialog: MatDialog,
+   private cdr: ChangeDetectorRef
+) {}
+
   @ViewChild(MatPaginator)
   paginator!: MatPaginator;
 
   @ViewChild(MatSort)
   sort!: MatSort;
 
-  ngOnChanges(): void {
+  // ngOnChanges(): void {
 
-    this.dataSource.data = this.employees;
+  //    let data = [...this.employees];
 
-    this.dataSource.filterPredicate = (data, filter) => {
+  // if (this.selectedApplication) {
 
-      filter = filter.trim().toLowerCase();
+  //   data = data.filter(x =>
+  //     x.application === this.selectedApplication
+  //   );
 
-      return (
-        data.name.toLowerCase().includes(filter) ||
-        data.email.toLowerCase().includes(filter) ||
-        data.application.toLowerCase().includes(filter) ||
-        data.browser.toLowerCase().includes(filter) ||
-        data.city.toLowerCase().includes(filter)
-      );
+  // }
 
-    };
+  // this.dataSource.data = data;
 
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
+  //   this.dataSource.filterPredicate = (data, filter) => {
+
+  //     filter = filter.trim().toLowerCase();
+
+  //     return (
+  //       data.name.toLowerCase().includes(filter) ||
+  //       data.email.toLowerCase().includes(filter) ||
+  //       data.application.toLowerCase().includes(filter) ||
+  //       data.browser.toLowerCase().includes(filter) ||
+  //       data.city.toLowerCase().includes(filter)
+  //     );
+
+  //   };
+
+  //   if (this.paginator) {
+  //     this.dataSource.paginator = this.paginator;
+  //   }
+
+  // }
+
+ngAfterViewInit(): void {
+
+  this.dataSource.paginator = this.paginator;
+  this.dataSource.sort = this.sort;
+
+  this.dataSource.sortingDataAccessor = (item, property) => {
+
+    if (property === 'loginTime') {
+      return new Date(item.loginTime).getTime();
     }
 
+    return item[property as keyof EmployeeActivity] ?? '';
+
+  };
+
+  this.refreshTable();
+}
+
+  private refreshTable(): void {
+
+  let data = [...this._employees];
+
+  if (this.selectedApplication) {
+    data = data.filter(
+      x => x.application === this.selectedApplication
+    );
   }
 
-  ngAfterViewInit(): void {
+  this.dataSource.data = data;
 
+  this.dataSource.filterPredicate = (data, filter) => {
+
+    filter = filter.trim().toLowerCase();
+
+    return (
+      data.name.toLowerCase().includes(filter) ||
+      data.email.toLowerCase().includes(filter) ||
+      data.application.toLowerCase().includes(filter) ||
+      data.browser.toLowerCase().includes(filter) ||
+      data.city.toLowerCase().includes(filter)
+    );
+  };
+
+  if (this.paginator) {
     this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-
-    this.dataSource.sortingDataAccessor = (item, property) => {
-
-      if (property === 'loginTime') {
-        return new Date(item.loginTime).getTime();
-      }
-
-      return item[property as keyof EmployeeActivity] ?? '';
-
-    };
-
   }
+
+  if (this.sort) {
+    this.dataSource.sort = this.sort;
+  }
+
+  this.cdr.detectChanges();
+}
 
   applyFilter(event: Event): void {
 
@@ -117,8 +195,23 @@ export class EmployeeTable implements OnChanges, AfterViewInit {
 
   }
 
-  viewEmployee(employee: EmployeeActivity): void {
-    this.selectedEmployee = employee;
-  }
+clearFilter() {
+
+  this.selectedApplication = '';
+
+  this.refreshTable();
+
+}
+
+viewEmployee(employee: EmployeeActivity): void {
+
+  this.dialog.open(EmployeeDetails, {
+width: '900px',
+  maxWidth: '95vw',
+  maxHeight: '90vh',
+  data: employee
+  });
+
+}
 
 }

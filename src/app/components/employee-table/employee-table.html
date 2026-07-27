@@ -7,7 +7,24 @@
       <h2 style="margin-bottom: 12px;">Employee Activity</h2>
       <span>{{ dataSource.filteredData.length }} Records Found</span>
     </div>
+<div
+    class="active-filter"
+    *ngIf="selectedApplication">
 
+    Showing:
+
+    <strong>{{selectedApplication}}</strong>
+
+    <button
+        mat-button
+        color="warn"
+        (click)="clearFilter()">
+
+        Clear
+
+    </button>
+
+</div>
     <mat-form-field appearance="outline" class="search">
 
       <mat-label>Search Employee</mat-label>
@@ -319,7 +336,7 @@
   class="details-card"
   *ngIf="selectedEmployee">
 
-  <mat-card-header>
+  <!-- <mat-card-header>
 
     <mat-card-title>
 
@@ -371,6 +388,6 @@
 
     </div>
 
-  </mat-card-content>
+  </mat-card-content> -->
 
 </mat-card>

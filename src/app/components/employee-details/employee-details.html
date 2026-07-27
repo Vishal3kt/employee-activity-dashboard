@@ -1,1 +1,191 @@
-<p>employee-details works!</p>
+<h2 mat-dialog-title>
+
+  <div class="header">
+
+    <div class="avatar">
+      {{ employee.name.charAt(0) }}
+    </div>
+
+    <div class="user-info">
+
+      <h3>{{ employee.name }}</h3>
+
+      <div class="email">
+        {{ employee.email }}
+      </div>
+
+      <div class="subtitle">
+        Last Sign-in •
+        {{ employee.loginTime | date:'dd MMM yyyy, hh:mm a' }}
+      </div>
+
+    </div>
+
+    <div class="status-card">
+
+      <div class="label">
+        Status
+      </div>
+
+      <span
+        class="status"
+        [ngClass]="employee.status.toLowerCase()">
+
+        {{ employee.status }}
+
+      </span>
+
+    </div>
+
+  </div>
+
+</h2>
+
+<mat-dialog-content>
+
+  <div class="cards">
+
+    <!-- Login -->
+
+    <mat-card>
+
+      <mat-card-title>
+
+        <mat-icon>login</mat-icon>
+
+        Login Information
+
+      </mat-card-title>
+
+      <div class="info">
+
+        <div>
+
+          <label>Application</label>
+
+          <span>{{ employee.application }}</span>
+
+        </div>
+
+        <div>
+
+          <label>Login Time</label>
+
+          <span>
+            {{ employee.loginTime | date:'dd MMM yyyy, hh:mm a' }}
+          </span>
+
+        </div>
+
+        <div>
+
+          <label>Resource</label>
+
+          <span>{{ employee.resource }}</span>
+
+        </div>
+
+      </div>
+
+    </mat-card>
+
+    <!-- Device -->
+
+    <mat-card>
+
+      <mat-card-title>
+
+        <mat-icon>computer</mat-icon>
+
+        Device Information
+
+      </mat-card-title>
+
+      <div class="info">
+
+        <div>
+
+          <label>Operating System</label>
+
+          <span>{{ employee.operatingSystem || 'N/A' }}</span>
+
+        </div>
+
+        <div>
+
+          <label>Browser</label>
+
+          <span>{{ employee.browser || 'N/A' }}</span>
+
+        </div>
+
+        <div>
+
+          <label>Device</label>
+
+          <span>{{ employee.device || 'N/A' }}</span>
+
+        </div>
+
+      </div>
+
+    </mat-card>
+
+    <!-- Network -->
+
+    <mat-card>
+
+      <mat-card-title>
+
+        <mat-icon>public</mat-icon>
+
+        Network Information
+
+      </mat-card-title>
+
+      <div class="info">
+
+        <div>
+
+          <label>IP Address</label>
+
+          <span>{{ employee.ipAddress }}</span>
+
+        </div>
+
+        <div>
+
+          <label>City</label>
+
+          <span>{{ employee.city }}</span>
+
+        </div>
+
+        <div>
+
+          <label>Country</label>
+
+          <span>{{ employee.country }}</span>
+
+        </div>
+
+      </div>
+
+    </mat-card>
+
+  </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+
+  <button
+    mat-flat-button
+    color="primary"
+    mat-dialog-close>
+
+    Close
+
+  </button>
+
+</mat-dialog-actions>

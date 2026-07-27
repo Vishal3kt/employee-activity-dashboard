@@ -1,5 +1,6 @@
 <div class="cards">
 
+  <!-- Employees -->
   <mat-card class="card">
 
     <div class="icon blue">
@@ -14,6 +15,7 @@
   </mat-card>
 
 
+  <!-- Sign-ins -->
   <mat-card class="card">
 
     <div class="icon green">
@@ -28,7 +30,10 @@
   </mat-card>
 
 
-  <mat-card class="card">
+  <!-- Applications -->
+  <mat-card
+      class="card clickable"
+      (click)="openApplications()">
 
     <div class="icon orange">
       <mat-icon>apps</mat-icon>
@@ -37,11 +42,13 @@
     <div class="content">
       <h2>{{ totalApps }}</h2>
       <p>Applications</p>
+      <small>Click to view</small>
     </div>
 
   </mat-card>
 
 
+  <!-- Devices -->
   <mat-card class="card">
 
     <div class="icon purple">
@@ -56,6 +63,7 @@
   </mat-card>
 
 
+  <!-- Cities -->
   <mat-card class="card">
 
     <div class="icon red">

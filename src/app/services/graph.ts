@@ -4,8 +4,8 @@ import { Observable, switchMap, map, catchError, throwError } from 'rxjs';
 
 import { MsalService } from '@azure/msal-angular';
 import {
-  InteractionRequiredAuthError,
-  BrowserAuthError
+  BrowserAuthError,
+  InteractionRequiredAuthError
 } from '@azure/msal-browser';
 
 import { EmployeeActivity } from '../models/employee.model';
@@ -18,6 +18,12 @@ export class GraphService {
   private http = inject(HttpClient);
   private msal = inject(MsalService);
 
+  private readonly scopes = [
+    'User.Read',
+    'AuditLog.Read.All',
+    'Directory.Read.All'
+  ];
+
   getEmployees(): Observable<EmployeeActivity[]> {
 
     const account =
@@ -25,39 +31,37 @@ export class GraphService {
       this.msal.instance.getAllAccounts()[0];
 
     if (!account) {
+
       this.msal.loginRedirect({
-        scopes: [
-          'User.Read',
-          'AuditLog.Read.All',
-          'Directory.Read.All'
-        ]
+        scopes: this.scopes
       });
 
       return throwError(() => new Error('No active account'));
+
     }
 
     return this.msal.acquireTokenSilent({
-      account,
-      scopes: [
-        'User.Read',
-        'AuditLog.Read.All',
-        'Directory.Read.All'
-      ]
-    }).pipe(
+  account,
+  scopes: this.scopes
+}).pipe(
 
-      switchMap(result =>
-        this.http.get<any>(
-          'https://graph.microsoft.com/v1.0/auditLogs/signIns',
-          {
-            headers: new HttpHeaders({
-              Authorization: `Bearer ${result.accessToken}`
-            })
-          }
-        )
-      ),
+       switchMap(result => {
 
-      map(response =>
-        response.value.map((item: any) => ({
+    console.log('Token acquired');
+
+    return this.http.get<any>(
+      'https://graph.microsoft.com/v1.0/auditLogs/signIns',
+      {
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${result.accessToken}`
+        })
+      }
+    );
+ }),
+      map(response =>{
+    console.log('Graph Response', response);
+          return response.value.map((item: any) => ({
+
           id: item.id,
           name: item.userDisplayName,
           email: item.userPrincipalName,
@@ -71,12 +75,14 @@ export class GraphService {
           loginTime: item.createdDateTime,
           status: item.status?.errorCode === 0 ? 'Active' : 'Failed',
           resource: item.resourceDisplayName
+
         }))
-      ),
+
+  }),
 
       catchError(error => {
 
-        console.error('MSAL Error:', error);
+        console.error(error);
 
         if (
           error instanceof InteractionRequiredAuthError ||
@@ -84,11 +90,7 @@ export class GraphService {
         ) {
 
           this.msal.loginRedirect({
-            scopes: [
-              'User.Read',
-              'AuditLog.Read.All',
-              'Directory.Read.All'
-            ]
+            scopes: this.scopes
           });
 
         }

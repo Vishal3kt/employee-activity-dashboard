@@ -1,0 +1,101 @@
+<h2 mat-dialog-title>
+
+  Tracked Applications
+
+  <span class="count">
+    ({{ applications.length }})
+  </span>
+
+</h2>
+
+<mat-dialog-content>
+
+  <table mat-table [dataSource]="applications">
+
+    <!-- Application -->
+
+    <ng-container matColumnDef="name">
+
+      <th mat-header-cell *matHeaderCellDef>
+
+        Application
+
+      </th>
+
+      <td mat-cell *matCellDef="let app">
+
+        <div class="app-name">
+
+          <mat-icon color="primary">
+            apps
+          </mat-icon>
+
+          <button
+    mat-button
+    color="primary"
+    (click)="select(app.name)">
+
+    {{app.name}}
+
+</button>
+
+        </div>
+
+      </td>
+
+    </ng-container>
+
+    <!-- Sign-ins -->
+
+    <ng-container matColumnDef="count">
+
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        style="text-align:right">
+
+        Sign-ins
+
+      </th>
+
+      <td
+        mat-cell
+        *matCellDef="let app"
+        style="text-align:right">
+
+        <span class="badge">
+
+          {{ app.count }}
+
+        </span>
+
+      </td>
+
+    </ng-container>
+
+    <tr
+      mat-header-row
+      *matHeaderRowDef="displayedColumns">
+    </tr>
+
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns">
+    </tr>
+
+  </table>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+
+  <button
+    mat-flat-button
+    color="primary"
+    mat-dialog-close>
+
+    Close
+
+  </button>
+
+</mat-dialog-actions>

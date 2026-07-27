@@ -1,0 +1,68 @@
+h2[mat-dialog-title]{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:22px;
+    font-weight:600;
+    margin-bottom:20px;
+}
+
+.count{
+    color:#1976d2;
+    font-size:18px;
+}
+
+mat-dialog-content{
+    max-height:500px;
+    overflow:auto;
+    padding:0 4px;
+}
+
+table{
+    width:100%;
+}
+
+.mat-mdc-header-row{
+    background:#f5f7fb;
+}
+
+.mat-mdc-header-cell{
+    font-weight:600;
+    color:#444;
+    font-size:15px;
+}
+
+.mat-mdc-row{
+    transition:.25s;
+}
+
+.mat-mdc-row:hover{
+    background:#f8fbff;
+}
+
+.app-name{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:500;
+}
+
+.app-name mat-icon{
+    color:#1976d2;
+}
+
+.badge{
+    display:inline-block;
+    min-width:55px;
+    text-align:center;
+    background:#e3f2fd;
+    color:#1565c0;
+    padding:5px 12px;
+    border-radius:20px;
+    font-weight:600;
+    font-size:13px;
+}
+
+mat-dialog-actions{
+    padding-top:20px;
+}

@@ -1,124 +1,226 @@
 .header {
-  height: 72px;
-  background: #ffffff;
-  color: #1f2937;
+
+  height: 76px;
+
+  background: #fff;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
 
   display: flex;
+
   justify-content: space-between;
+
   align-items: center;
 
-  padding: 0 30px;
+  padding: 0 28px;
 
-  box-shadow: 0 2px 12px rgba(0,0,0,.08);
-  border-bottom: 1px solid #e5e7eb;
 }
 
 .left {
+
   display: flex;
+
   align-items: center;
-  gap: 15px;
+
+  gap: 18px;
+
 }
 
 .logo {
-  width: 48px;
-  height: 48px;
+
+  width: 50px;
+
+  height: 50px;
 
   border-radius: 12px;
 
-  background: #1976d2;
+  background: #0f6cbd;
 
   display: flex;
-  align-items: center;
+
   justify-content: center;
+
+  align-items: center;
+
 }
 
 .logo mat-icon {
+
   color: white;
+
   font-size: 28px;
+
   width: 28px;
+
   height: 28px;
+
 }
 
 .title-section {
+
   display: flex;
+
   flex-direction: column;
+
 }
 
 .title-section h2 {
+
   margin: 0;
-  font-size: 22px;
+
+  font-size: 24px;
+
   font-weight: 700;
+
 }
 
 .title-section span {
+
   color: #6b7280;
+
   font-size: 13px;
+
+}
+
+.center {
+
+  flex: 1;
+
+  display: flex;
+
+  justify-content: center;
+
+}
+
+.search {
+
+  width: 380px;
+
 }
 
 .right {
+
   display: flex;
+
   align-items: center;
-  gap: 18px;
+
+  gap: 14px;
+
 }
 
 .updated {
+
   display: flex;
+
   align-items: center;
+
   gap: 6px;
+
   color: #6b7280;
+
   font-size: 14px;
+
 }
 
 .updated mat-icon {
+
   font-size: 18px;
-  width: 18px;
-  height: 18px;
+
+}
+
+.divider {
+
+  width: 1px;
+
+  height: 36px;
+
+  background: #e5e7eb;
+
 }
 
 .user-profile {
+
   display: flex;
+
   align-items: center;
+
   gap: 10px;
+
 }
 
 .avatar {
+
   width: 42px;
+
   height: 42px;
 
   border-radius: 50%;
 
-  background: #1976d2;
+  background: #0f6cbd;
+
   color: white;
 
   display: flex;
-  align-items: center;
+
   justify-content: center;
 
+  align-items: center;
+
   font-weight: 600;
+
+  font-size: 18px;
+
 }
 
 .user-info {
+
   display: flex;
+
   flex-direction: column;
+
 }
 
 .user-info strong {
+
   font-size: 14px;
+
 }
 
 .user-info small {
+
   color: #6b7280;
+
+  font-size: 12px;
+
 }
 
-@media (max-width: 900px) {
+button[mat-icon-button] {
 
-  .updated,
-  .user-info {
-    display: none;
+  color: #5f6368;
+
+}
+
+@media (max-width:1200px){
+
+  .search{
+
+    width:250px;
+
   }
 
-  .header {
-    padding: 0 15px;
+}
+
+@media (max-width:900px){
+
+  .center,
+  .updated,
+  .user-info,
+  .divider{
+
+    display:none;
+
   }
 
 }
