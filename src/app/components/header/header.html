@@ -1,39 +1,47 @@
-<mat-toolbar color="primary" class="header">
+<mat-toolbar class="header">
 
-    <div class="left">
+  <div class="left">
 
-        <mat-icon>analytics</mat-icon>
+    <div class="logo">
+      <mat-icon>analytics</mat-icon>
+    </div>
 
-        <span class="title">
-            Employee Activity Dashboard
-        </span>
+    <div class="title-section">
+      <h2>Employee Activity Dashboard</h2>
+      <span>Microsoft Graph Sign-in Analytics</span>
+    </div>
+
+  </div>
+
+  <div class="right">
+
+    <div class="updated">
+      <mat-icon>schedule</mat-icon>
+      <span>Last Updated: {{ lastUpdated | date:'dd MMM yyyy, hh:mm a' }}</span>
+    </div>
+
+    <button mat-flat-button color="primary">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+
+    <div class="user-profile">
+
+      <div class="avatar">
+        {{ userName.charAt(0) | uppercase }}
+      </div>
+
+      <div class="user-info">
+        <strong>{{ userName }}</strong>
+        <small>Administrator</small>
+      </div>
 
     </div>
 
-    <div class="right">
+    <button mat-icon-button color="warn">
+      <mat-icon>logout</mat-icon>
+    </button>
 
-        <span class="user">
-
-            Welcome {{userName}}
-
-        </span>
-
-        <button mat-raised-button color="accent">
-
-            <mat-icon>sync</mat-icon>
-
-            Sync
-
-        </button>
-
-        <button mat-raised-button>
-
-            <mat-icon>logout</mat-icon>
-
-            Logout
-
-        </button>
-
-    </div>
+  </div>
 
 </mat-toolbar>

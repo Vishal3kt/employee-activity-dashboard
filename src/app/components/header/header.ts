@@ -1,4 +1,6 @@
 import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-header',
   standalone: true,
   imports: [
+    CommonModule,
     MatToolbarModule,
     MatButtonModule,
     MatIconModule
@@ -16,6 +19,8 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class Header {
 
-  @Input() userName = "Guest";
+  @Input() userName = 'Guest';
+
+  lastUpdated = new Date();
 
 }

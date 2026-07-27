@@ -7,10 +7,9 @@ import { EmployeeTable } from '../../components/employee-table/employee-table';
 import { GraphService } from '../../services/graph';
 
 import { EmployeeActivity } from '../../models/employee.model';
-import { LoginTrend } from '../../components/login-trend/login-trend';
-import { BrowserChart } from '../../components/browser-chart/browser-chart';
-import { ApplicationChart } from '../../components/application-chart/application-chart';
-import { CityChart } from '../../components/city-chart/city-chart';
+// import { BrowserChart } from '../../components/browser-chart/browser-chart';
+// import { ApplicationChart } from '../../components/application-chart/application-chart';
+// import { CityChart } from '../../components/city-chart/city-chart';
 import { MsalService } from '@azure/msal-angular';
 
 @Component({
@@ -20,10 +19,9 @@ import { MsalService } from '@azure/msal-angular';
     Header,
     DashboardCards,
     EmployeeTable,
-    LoginTrend,
-    BrowserChart,
-    ApplicationChart,
-    CityChart
+    // BrowserChart,
+    // ApplicationChart,
+    // CityChart
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'

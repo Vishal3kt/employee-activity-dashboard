@@ -1,22 +1,24 @@
-import { AfterViewInit, Component, Input, OnChanges, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  OnChanges,
+  ViewChild
+} from '@angular/core';
 
-import { MatTableDataSource, MatTableModule, } from '@angular/material/table';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-
 import { MatButtonModule } from '@angular/material/button';
-
 import { MatIconModule } from '@angular/material/icon';
-
-import { MatChipsModule } from '@angular/material/chips';
-
-import { FormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
 
 import { EmployeeActivity } from '../../models/employee.model';
-import { CdkTableDataSourceInput } from '@angular/cdk/table';
 
 @Component({
   selector: 'app-employee-table',
@@ -27,80 +29,96 @@ import { CdkTableDataSourceInput } from '@angular/cdk/table';
     MatTableModule,
     MatFormFieldModule,
     MatInputModule,
-    MatChipsModule,
+    MatPaginatorModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule,
-    MatPaginator
-],
+    MatCardModule
+  ],
   templateUrl: './employee-table.html',
   styleUrl: './employee-table.scss'
 })
-export class EmployeeTable implements OnChanges,AfterViewInit{
+export class EmployeeTable implements OnChanges, AfterViewInit {
 
   @Input() employees: EmployeeActivity[] = [];
 
   search = '';
 
-displayedColumns = [
-  'employee',
-  'application',
-  'browser',
-  'city',
-  'loginTime',
-  'status',
-  'action'
-];
+  selectedEmployee?: EmployeeActivity;
 
-dataSource = new MatTableDataSource<EmployeeActivity>();
+  displayedColumns = [
+    'employee',
+    'application',
+    'browser',
+    'city',
+    'loginTime',
+    'status',
+    'action'
+  ];
 
-@ViewChild(MatPaginator)
-paginator!: MatPaginator;
+  dataSource = new MatTableDataSource<EmployeeActivity>();
 
-@ViewChild(MatSort)
-sort!: MatSort;
-filteredEmployees: CdkTableDataSourceInput<any> | undefined;
+  @ViewChild(MatPaginator)
+  paginator!: MatPaginator;
 
-ngOnChanges() {
-  this.dataSource.data = this.employees;
+  @ViewChild(MatSort)
+  sort!: MatSort;
 
-  this.dataSource.filterPredicate = (data, filter) => {
+  ngOnChanges(): void {
 
-    filter = filter.trim().toLowerCase();
+    this.dataSource.data = this.employees;
 
-    return (
-      data.name.toLowerCase().includes(filter) ||
-      data.email.toLowerCase().includes(filter) ||
-      data.application.toLowerCase().includes(filter) ||
-      data.city.toLowerCase().includes(filter)
-    );
+    this.dataSource.filterPredicate = (data, filter) => {
 
-  };
-}
+      filter = filter.trim().toLowerCase();
 
-ngAfterViewInit() {
+      return (
+        data.name.toLowerCase().includes(filter) ||
+        data.email.toLowerCase().includes(filter) ||
+        data.application.toLowerCase().includes(filter) ||
+        data.browser.toLowerCase().includes(filter) ||
+        data.city.toLowerCase().includes(filter)
+      );
 
-  this.dataSource.paginator = this.paginator;
-  this.dataSource.sort = this.sort;
+    };
 
-  this.dataSource.sortingDataAccessor = (item, property) => {
-
-    if (property === 'loginTime') {
-      return new Date(item.loginTime).getTime();
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
     }
 
-    return item[property as keyof EmployeeActivity] as any;
+  }
 
-  };
+  ngAfterViewInit(): void {
 
-}
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
 
-applyFilter(event: Event) {
+    this.dataSource.sortingDataAccessor = (item, property) => {
 
-  const value = (event.target as HTMLInputElement).value;
+      if (property === 'loginTime') {
+        return new Date(item.loginTime).getTime();
+      }
 
-  this.dataSource.filter = value.trim().toLowerCase();
+      return item[property as keyof EmployeeActivity] ?? '';
 
-}
+    };
+
+  }
+
+  applyFilter(event: Event): void {
+
+    const value = (event.target as HTMLInputElement).value;
+
+    this.dataSource.filter = value.trim().toLowerCase();
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+
+  }
+
+  viewEmployee(employee: EmployeeActivity): void {
+    this.selectedEmployee = employee;
+  }
 
 }

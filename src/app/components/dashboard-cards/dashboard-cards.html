@@ -1,33 +1,72 @@
 <div class="cards">
 
-    <mat-card class="card blue">
-        <mat-icon>groups</mat-icon>
-        <h2>{{totalEmployees}}</h2>
-        <span>Employees</span>
-    </mat-card>
+  <mat-card class="card">
 
-    <mat-card class="card green">
-        <mat-icon>check_circle</mat-icon>
-        <h2>{{activeToday}}</h2>
-        <span>Active Today</span>
-    </mat-card>
+    <div class="icon blue">
+      <mat-icon>groups</mat-icon>
+    </div>
 
-    <mat-card class="card orange">
-        <mat-icon>apps</mat-icon>
-        <h2>{{totalApps}}</h2>
-        <span>Applications</span>
-    </mat-card>
+    <div class="content">
+      <h2>{{ totalEmployees }}</h2>
+      <p>Total Employees</p>
+    </div>
 
-    <mat-card class="card purple">
-        <mat-icon>computer</mat-icon>
-        <h2>{{totalDevices}}</h2>
-        <span>Devices</span>
-    </mat-card>
+  </mat-card>
 
-    <mat-card class="card red">
-        <mat-icon>location_city</mat-icon>
-        <h2>{{totalCities}}</h2>
-        <span>Cities</span>
-    </mat-card>
+
+  <mat-card class="card">
+
+    <div class="icon green">
+      <mat-icon>check_circle</mat-icon>
+    </div>
+
+    <div class="content">
+      <h2>{{ activeToday }}</h2>
+      <p>Today's Sign-ins</p>
+    </div>
+
+  </mat-card>
+
+
+  <mat-card class="card">
+
+    <div class="icon orange">
+      <mat-icon>apps</mat-icon>
+    </div>
+
+    <div class="content">
+      <h2>{{ totalApps }}</h2>
+      <p>Applications</p>
+    </div>
+
+  </mat-card>
+
+
+  <mat-card class="card">
+
+    <div class="icon purple">
+      <mat-icon>computer</mat-icon>
+    </div>
+
+    <div class="content">
+      <h2>{{ totalDevices }}</h2>
+      <p>Devices</p>
+    </div>
+
+  </mat-card>
+
+
+  <mat-card class="card">
+
+    <div class="icon red">
+      <mat-icon>location_city</mat-icon>
+    </div>
+
+    <div class="content">
+      <h2>{{ totalCities }}</h2>
+      <p>Cities</p>
+    </div>
+
+  </mat-card>
 
 </div>
