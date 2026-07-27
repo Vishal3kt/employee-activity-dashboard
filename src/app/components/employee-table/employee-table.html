@@ -4,40 +4,69 @@
   <div class="table-header">
 
     <div class="title">
-      <h2 style="margin-bottom: 12px;">Employee Activity</h2>
+      <h2 style="margin-bottom: 10px;">Employee Activity</h2>
       <span>{{ dataSource.filteredData.length }} Records Found</span>
     </div>
-<div
+
+    <div class="table-actions">
+
+      <!-- Status Filter -->
+      <mat-form-field appearance="outline" class="status-filter">
+        <mat-label>Status</mat-label>
+
+        <mat-select
+          [(value)]="selectedStatus"
+          (selectionChange)="onStatusChange()">
+
+          <mat-option
+            *ngFor="let status of statusOptions"
+            [value]="status">
+
+            {{ status }}
+
+          </mat-option>
+
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Search -->
+      <mat-form-field appearance="outline" class="search">
+
+        <mat-label>Search Employee</mat-label>
+
+        <mat-icon matPrefix>search</mat-icon>
+
+        <input
+          matInput
+          [(ngModel)]="search"
+          (ngModelChange)="refreshTable()"
+          placeholder="Search Name, Email, Browser">
+
+      </mat-form-field>
+
+    </div>
+
+  </div>
+
+  <!-- Active Application Filter -->
+
+  <div
     class="active-filter"
     *ngIf="selectedApplication">
 
-    Showing:
+    <span>Showing:</span>
 
-    <strong>{{selectedApplication}}</strong>
+    <strong>{{ selectedApplication }}</strong>
 
     <button
-        mat-button
-        color="warn"
-        (click)="clearFilter()">
+      mat-stroked-button
+      color="warn"
+      (click)="clearFilter()">
 
-        Clear
+      <mat-icon>close</mat-icon>
+      Clear
 
     </button>
-
-</div>
-    <mat-form-field appearance="outline" class="search">
-
-      <mat-label>Search Employee</mat-label>
-
-      <mat-icon matPrefix>search</mat-icon>
-
-      <input
-        matInput
-        [(ngModel)]="search"
-        (keyup)="applyFilter($event)"
-        placeholder="Search by Name, Email, Browser">
-
-    </mat-form-field>
 
   </div>
 
@@ -52,39 +81,26 @@
 
     <ng-container matColumnDef="employee">
 
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-        mat-sort-header>
-
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
         Employee
-
       </th>
 
-      <td
-        mat-cell
-        *matCellDef="let row">
+      <td mat-cell *matCellDef="let row">
 
         <div class="employee">
 
           <div class="avatar">
-
             {{ row.name.charAt(0) }}
-
           </div>
 
           <div>
 
             <div class="name">
-
               {{ row.name }}
-
             </div>
 
             <div class="email">
-
               {{ row.email }}
-
             </div>
 
           </div>
@@ -99,23 +115,14 @@
 
     <ng-container matColumnDef="application">
 
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-        mat-sort-header>
-
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
         Application
-
       </th>
 
-      <td
-        mat-cell
-        *matCellDef="let row">
+      <td mat-cell *matCellDef="let row">
 
         <span class="app-chip">
-
           {{ row.application }}
-
         </span>
 
       </td>
@@ -126,18 +133,11 @@
 
     <ng-container matColumnDef="browser">
 
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-        mat-sort-header>
-
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
         Browser
-
       </th>
 
-      <td
-        mat-cell
-        *matCellDef="let row">
+      <td mat-cell *matCellDef="let row">
 
         <div class="browser">
 
@@ -155,21 +155,12 @@
 
     <ng-container matColumnDef="city">
 
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-        mat-sort-header>
-
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
         City
-
       </th>
 
-      <td
-        mat-cell
-        *matCellDef="let row">
-
+      <td mat-cell *matCellDef="let row">
         {{ row.city }}
-
       </td>
 
     </ng-container>
@@ -178,18 +169,11 @@
 
     <ng-container matColumnDef="loginTime">
 
-      <th
-        mat-header-cell
-        *matHeaderCellDef
-        mat-sort-header>
-
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
         Login Time
-
       </th>
 
-      <td
-        mat-cell
-        *matCellDef="let row">
+      <td mat-cell *matCellDef="let row">
 
         <div class="login-time">
 
@@ -213,17 +197,11 @@
 
     <ng-container matColumnDef="status">
 
-      <th
-        mat-header-cell
-        *matHeaderCellDef>
-
+      <th mat-header-cell *matHeaderCellDef>
         Status
-
       </th>
 
-      <td
-        mat-cell
-        *matCellDef="let row">
+      <td mat-cell *matCellDef="let row">
 
         <span
           class="status"
@@ -232,8 +210,8 @@
           <mat-icon>
 
             {{ row.status === 'Active'
-              ? 'check_circle'
-              : 'cancel' }}
+            ? 'check_circle'
+            : 'cancel' }}
 
           </mat-icon>
 
@@ -249,28 +227,18 @@
 
     <ng-container matColumnDef="action">
 
-      <th
-        mat-header-cell
-        *matHeaderCellDef>
-
+      <th mat-header-cell *matHeaderCellDef>
         Action
-
       </th>
 
-      <td
-        mat-cell
-        *matCellDef="let row">
+      <td mat-cell *matCellDef="let row">
 
         <button
           mat-flat-button
           color="primary"
           (click)="viewEmployee(row)">
 
-          <mat-icon>
-
-            visibility
-
-          </mat-icon>
+          <mat-icon>visibility</mat-icon>
 
           View
 
@@ -280,29 +248,13 @@
 
     </ng-container>
 
-    <!-- Header Row -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
 
-    <tr
-      mat-header-row
-      *matHeaderRowDef="displayedColumns">
-    </tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
-    <!-- Data Row -->
+    <tr class="mat-row" *matNoDataRow>
 
-    <tr
-      mat-row
-      *matRowDef="let row; columns: displayedColumns">
-    </tr>
-
-    <!-- No Data -->
-
-    <tr
-      class="mat-row"
-      *matNoDataRow>
-
-      <td
-        class="mat-cell"
-        colspan="7">
+      <td class="mat-cell" colspan="7">
 
         <div class="no-data">
 
@@ -310,7 +262,7 @@
 
           <h3>No Employee Found</h3>
 
-          <p>Try another search.</p>
+          <p>Try changing your filters.</p>
 
         </div>
 
@@ -320,8 +272,6 @@
 
   </table>
 
-  <!-- Paginator -->
-
   <mat-paginator
     [pageSize]="10"
     [pageSizeOptions]="[10,20,50]"
@@ -329,65 +279,3 @@
   </mat-paginator>
 
 </div>
-
-<!-- Employee Details -->
-
-<mat-card
-  class="details-card"
-  *ngIf="selectedEmployee">
-
-  <!-- <mat-card-header>
-
-    <mat-card-title>
-
-      Employee Details
-
-    </mat-card-title>
-
-  </mat-card-header>
-
-  <mat-card-content>
-
-    <div class="details-grid">
-
-      <div><strong>Name</strong></div>
-      <div>{{ selectedEmployee.name }}</div>
-
-      <div><strong>Email</strong></div>
-      <div>{{ selectedEmployee.email }}</div>
-
-      <div><strong>Application</strong></div>
-      <div>{{ selectedEmployee.application }}</div>
-
-      <div><strong>Browser</strong></div>
-      <div>{{ selectedEmployee.browser }}</div>
-
-      <div><strong>Operating System</strong></div>
-      <div>{{ selectedEmployee.operatingSystem }}</div>
-
-      <div><strong>Device</strong></div>
-      <div>{{ selectedEmployee.device }}</div>
-
-      <div><strong>IP Address</strong></div>
-      <div>{{ selectedEmployee.ipAddress }}</div>
-
-      <div><strong>City</strong></div>
-      <div>{{ selectedEmployee.city }}</div>
-
-      <div><strong>Country</strong></div>
-      <div>{{ selectedEmployee.country }}</div>
-
-      <div><strong>Login Time</strong></div>
-      <div>{{ selectedEmployee.loginTime | date:'dd MMM yyyy, hh:mm a' }}</div>
-
-      <div><strong>Status</strong></div>
-      <div>{{ selectedEmployee.status }}</div>
-
-      <div><strong>Resource</strong></div>
-      <div>{{ selectedEmployee.resource }}</div>
-
-    </div>
-
-  </mat-card-content> -->
-
-</mat-card>

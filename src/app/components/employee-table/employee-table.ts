@@ -22,6 +22,7 @@ import { MatCardModule } from '@angular/material/card';
 import { EmployeeActivity } from '../../models/employee.model';
 import { MatDialog } from '@angular/material/dialog';
 import { EmployeeDetails } from '../employee-details/employee-details';
+import { MatSelectModule } from '@angular/material/select';
 @Component({
   selector: 'app-employee-table',
   standalone: true,
@@ -35,7 +36,8 @@ import { EmployeeDetails } from '../employee-details/employee-details';
     MatSortModule,
     MatButtonModule,
     MatIconModule,
-    MatCardModule
+    MatCardModule,
+    MatSelectModule
   ],
   templateUrl: './employee-table.html',
   styleUrl: './employee-table.scss'
@@ -65,12 +67,32 @@ set employees(value: EmployeeActivity[]) {
 get employees() {
   return this._employees;
 }
-  @Input()
-selectedApplication = '';
+private _selectedApplication = '';
+
+@Input()
+set selectedApplication(value: string) {
+
+  this._selectedApplication = value || '';
+
+  this.refreshTable();
+
+}
+
+get selectedApplication(): string {
+  return this._selectedApplication;
+}
 
   search = '';
 
   selectedEmployee?: EmployeeActivity;
+
+  statusOptions = [
+  'All',
+  'Active',
+  'Failed'
+];
+
+selectedStatus = 'All';
 
   displayedColumns = [
     'employee',
@@ -147,57 +169,60 @@ ngAfterViewInit(): void {
   this.refreshTable();
 }
 
-  private refreshTable(): void {
+refreshTable(): void {
 
   let data = [...this._employees];
 
-  if (this.selectedApplication) {
-    data = data.filter(
-      x => x.application === this.selectedApplication
+  // Application Filter
+  if (this._selectedApplication) {
+    data = data.filter(x => x.application === this._selectedApplication);
+  }
+
+  // Status Filter
+  if (this.selectedStatus !== 'All') {
+    data = data.filter(x => x.status === this.selectedStatus);
+  }
+
+  // Search Filter
+  if (this.search.trim()) {
+
+    const value = this.search.toLowerCase();
+
+    data = data.filter(x =>
+      x.name.toLowerCase().includes(value) ||
+      x.email.toLowerCase().includes(value) ||
+      x.application.toLowerCase().includes(value) ||
+      x.browser?.toLowerCase().includes(value) ||
+      x.city?.toLowerCase().includes(value)
     );
+
   }
 
   this.dataSource.data = data;
 
-  this.dataSource.filterPredicate = (data, filter) => {
-
-    filter = filter.trim().toLowerCase();
-
-    return (
-      data.name.toLowerCase().includes(filter) ||
-      data.email.toLowerCase().includes(filter) ||
-      data.application.toLowerCase().includes(filter) ||
-      data.browser.toLowerCase().includes(filter) ||
-      data.city.toLowerCase().includes(filter)
-    );
-  };
-
   if (this.paginator) {
-    this.dataSource.paginator = this.paginator;
+    this.paginator.firstPage();
   }
 
-  if (this.sort) {
-    this.dataSource.sort = this.sort;
-  }
-
-  this.cdr.detectChanges();
 }
 
-  applyFilter(event: Event): void {
+applyFilter(event: Event): void {
 
-    const value = (event.target as HTMLInputElement).value;
+  this.search = (event.target as HTMLInputElement).value;
 
-    this.dataSource.filter = value.trim().toLowerCase();
+  this.refreshTable();
 
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
+}
 
-  }
+onStatusChange(): void {
+  this.refreshTable();
+}
 
-clearFilter() {
+clearFilter(): void {
 
-  this.selectedApplication = '';
+  this._selectedApplication = '';
+  this.selectedStatus = 'All';
+  this.search = '';
 
   this.refreshTable();
 
