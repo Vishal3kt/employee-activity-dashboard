@@ -1,29 +1,24 @@
 <app-header></app-header>
 
-<!-- Loader -->
+@if (loading()) {
+  <app-dashboard-loader [stage]="stage()"></app-dashboard-loader>
+} @else if (error()) {
+  <div class="state-message" role="alert">
+    <mat-icon>cloud_off</mat-icon>
+    <h3>Sign-in activity isn’t available</h3>
+    <p>{{ error() }}</p>
+    <button mat-flat-button color="primary" (click)="loadData()">
+      <mat-icon>refresh</mat-icon>
+      Try again
+    </button>
+  </div>
+} @else {
+  <app-dashboard-cards
+    [employees]="employees()"
+    (applicationSelected)="onApplicationSelected($event)"
+  >
+  </app-dashboard-cards>
 
-<div class="loader-container" *ngIf="loading">
-
-    <mat-spinner diameter="70"></mat-spinner>
-
-    <h3>Loading Employee Activities...</h3>
-
-    <p>Please wait while Microsoft Graph data is being fetched.</p>
-
-</div>
-
-<!-- Dashboard -->
-
-<div *ngIf="!loading">
-
-    <app-dashboard-cards
-        [employees]="employees"
-        (applicationSelected)="onApplicationSelected($event)">
-    </app-dashboard-cards>
-
-    <app-employee-table
-        [employees]="employees"
-        [selectedApplication]="selectedApplication">
-    </app-employee-table>
-
-</div>
+  <app-employee-table [employees]="employees()" [selectedApplication]="selectedApplication()">
+  </app-employee-table>
+}

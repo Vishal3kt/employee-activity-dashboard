@@ -1,11 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnChanges,
-  ViewChild
-} from '@angular/core';
+import { AfterViewInit, Component, Input, ViewChild, inject } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,11 +11,12 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDialog } from '@angular/material/dialog';
 
 import { EmployeeActivity } from '../../models/employee.model';
-import { MatDialog } from '@angular/material/dialog';
-import { EmployeeDetails } from '../employee-details/employee-details';
-import { MatSelectModule } from '@angular/material/select';
+import { EmployeeDay } from '../employee-day/employee-day';
+
 @Component({
   selector: 'app-employee-table',
   standalone: true,
@@ -37,62 +31,43 @@ import { MatSelectModule } from '@angular/material/select';
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatSelectModule
+    MatSelectModule,
   ],
   templateUrl: './employee-table.html',
-  styleUrl: './employee-table.scss'
+  styleUrl: './employee-table.scss',
 })
 export class EmployeeTable implements AfterViewInit {
+  private dialog = inject(MatDialog);
 
-private _employees: EmployeeActivity[] = [];
+  private _employees: EmployeeActivity[] = [];
+  private _selectedApplication = '';
 
-@Input()
-set employees(value: EmployeeActivity[]) {
-
-  this._employees = value || [];
-
-   this.refreshTable();
-
-  this.dataSource.data = this._employees;
-
-  if (this.paginator) {
-    this.dataSource.paginator = this.paginator;
+  @Input()
+  set employees(value: EmployeeActivity[]) {
+    this._employees = value || [];
+    // Fixed: previously the data was overwritten right after filtering,
+    // which threw the active filters away.
+    this.refreshTable();
   }
 
-  if (this.sort) {
-    this.dataSource.sort = this.sort;
+  get employees(): EmployeeActivity[] {
+    return this._employees;
   }
-}
 
-get employees() {
-  return this._employees;
-}
-private _selectedApplication = '';
+  @Input()
+  set selectedApplication(value: string) {
+    this._selectedApplication = value || '';
+    this.refreshTable();
+  }
 
-@Input()
-set selectedApplication(value: string) {
-
-  this._selectedApplication = value || '';
-
-  this.refreshTable();
-
-}
-
-get selectedApplication(): string {
-  return this._selectedApplication;
-}
+  get selectedApplication(): string {
+    return this._selectedApplication;
+  }
 
   search = '';
 
-  selectedEmployee?: EmployeeActivity;
-
-  statusOptions = [
-  'All',
-  'Active',
-  'Failed'
-];
-
-selectedStatus = 'All';
+  statusOptions = ['All', 'Active', 'Failed'];
+  selectedStatus = 'All';
 
   displayedColumns = [
     'employee',
@@ -101,142 +76,81 @@ selectedStatus = 'All';
     'city',
     'loginTime',
     'status',
-    'action'
+    'action',
   ];
 
   dataSource = new MatTableDataSource<EmployeeActivity>();
 
-constructor(
-  private dialog: MatDialog,
-   private cdr: ChangeDetectorRef
-) {}
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
-  @ViewChild(MatPaginator)
-  paginator!: MatPaginator;
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
 
-  @ViewChild(MatSort)
-  sort!: MatSort;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      if (property === 'loginTime') {
+        return new Date(item.loginTime).getTime();
+      }
+      if (property === 'employee') {
+        return item.name?.toLowerCase() ?? '';
+      }
+      return (item[property as keyof EmployeeActivity] as string) ?? '';
+    };
 
-  // ngOnChanges(): void {
+    this.refreshTable();
+  }
 
-  //    let data = [...this.employees];
+  refreshTable(): void {
+    let data = [...this._employees];
 
-  // if (this.selectedApplication) {
-
-  //   data = data.filter(x =>
-  //     x.application === this.selectedApplication
-  //   );
-
-  // }
-
-  // this.dataSource.data = data;
-
-  //   this.dataSource.filterPredicate = (data, filter) => {
-
-  //     filter = filter.trim().toLowerCase();
-
-  //     return (
-  //       data.name.toLowerCase().includes(filter) ||
-  //       data.email.toLowerCase().includes(filter) ||
-  //       data.application.toLowerCase().includes(filter) ||
-  //       data.browser.toLowerCase().includes(filter) ||
-  //       data.city.toLowerCase().includes(filter)
-  //     );
-
-  //   };
-
-  //   if (this.paginator) {
-  //     this.dataSource.paginator = this.paginator;
-  //   }
-
-  // }
-
-ngAfterViewInit(): void {
-
-  this.dataSource.paginator = this.paginator;
-  this.dataSource.sort = this.sort;
-
-  this.dataSource.sortingDataAccessor = (item, property) => {
-
-    if (property === 'loginTime') {
-      return new Date(item.loginTime).getTime();
+    if (this._selectedApplication) {
+      data = data.filter((x) => x.application === this._selectedApplication);
     }
 
-    return item[property as keyof EmployeeActivity] ?? '';
+    if (this.selectedStatus !== 'All') {
+      data = data.filter((x) => x.status === this.selectedStatus);
+    }
 
-  };
+    const value = this.search.trim().toLowerCase();
 
-  this.refreshTable();
-}
+    if (value) {
+      data = data.filter(
+        (x) =>
+          x.name?.toLowerCase().includes(value) ||
+          x.email?.toLowerCase().includes(value) ||
+          x.application?.toLowerCase().includes(value) ||
+          x.browser?.toLowerCase().includes(value) ||
+          x.city?.toLowerCase().includes(value),
+      );
+    }
 
-refreshTable(): void {
-
-  let data = [...this._employees];
-
-  // Application Filter
-  if (this._selectedApplication) {
-    data = data.filter(x => x.application === this._selectedApplication);
+    this.dataSource.data = data;
+    this.paginator?.firstPage();
   }
 
-  // Status Filter
-  if (this.selectedStatus !== 'All') {
-    data = data.filter(x => x.status === this.selectedStatus);
+  onStatusChange(): void {
+    this.refreshTable();
   }
 
-  // Search Filter
-  if (this.search.trim()) {
-
-    const value = this.search.toLowerCase();
-
-    data = data.filter(x =>
-      x.name.toLowerCase().includes(value) ||
-      x.email.toLowerCase().includes(value) ||
-      x.application.toLowerCase().includes(value) ||
-      x.browser?.toLowerCase().includes(value) ||
-      x.city?.toLowerCase().includes(value)
-    );
-
+  clearFilter(): void {
+    this._selectedApplication = '';
+    this.selectedStatus = 'All';
+    this.search = '';
+    this.refreshTable();
   }
 
-  this.dataSource.data = data;
-
-  if (this.paginator) {
-    this.paginator.firstPage();
+  /** Opens the employee's day as a full-height panel on the right. */
+  viewEmployee(employee: EmployeeActivity): void {
+    this.dialog.open(EmployeeDay, {
+      data: employee,
+      position: { top: '0', right: '0' },
+      width: '760px',
+      maxWidth: '100vw',
+      height: '100vh',
+      maxHeight: '100vh',
+      panelClass: 'employee-day-panel',
+      autoFocus: 'dialog',
+    });
   }
-
-}
-
-applyFilter(event: Event): void {
-
-  this.search = (event.target as HTMLInputElement).value;
-
-  this.refreshTable();
-
-}
-
-onStatusChange(): void {
-  this.refreshTable();
-}
-
-clearFilter(): void {
-
-  this._selectedApplication = '';
-  this.selectedStatus = 'All';
-  this.search = '';
-
-  this.refreshTable();
-
-}
-
-viewEmployee(employee: EmployeeActivity): void {
-
-  this.dialog.open(EmployeeDetails, {
-width: '900px',
-  maxWidth: '95vw',
-  maxHeight: '90vh',
-  data: employee
-  });
-
-}
-
 }

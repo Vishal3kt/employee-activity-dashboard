@@ -1,73 +1,70 @@
 <mat-toolbar class="header">
-
   <div class="left">
-
     <div class="logo">
       <mat-icon>analytics</mat-icon>
     </div>
 
     <div class="title-section">
-
       <h2>Employee Activity Dashboard</h2>
-
       <span>Microsoft Graph Sign-in Analytics</span>
-
     </div>
-
   </div>
 
   <div class="right">
-
     <div class="updated">
-
-      <mat-icon style="margin-top: 6px;">schedule</mat-icon>
-
-      <span>
-
-        Updated {{ lastUpdated | date:'hh:mm a' }}
-
-      </span>
-
+      <mat-icon style="margin-top: 6px">schedule</mat-icon>
+      <span>Updated {{ lastUpdated | date: 'hh:mm a' }}</span>
     </div>
 
-    <button
-      mat-flat-button
-      color="primary">
-
+    <!-- Wired up in the next feature -->
+    <button mat-flat-button color="primary">
       <mat-icon>refresh</mat-icon>
-
       Refresh
-
     </button>
 
-    <!-- <div class="divider"></div> -->
-
-    <div class="user-profile">
-
-      <div class="avatar">
-
-        {{ userName.charAt(0) | uppercase }}
-
-      </div>
+    <!-- Profile menu -->
+    <button
+      type="button"
+      class="user-profile"
+      [matMenuTriggerFor]="profileMenu"
+      aria-label="Account menu"
+    >
+      <div class="avatar">{{ initials() }}</div>
 
       <div class="user-info">
-
-        <strong>{{ userName }}</strong>
-
+        <strong>{{ displayName() }}</strong>
         <small>Microsoft Entra ID</small>
-
       </div>
 
-    </div>
+      <mat-icon class="chevron">expand_more</mat-icon>
+    </button>
+
+    <mat-menu #profileMenu="matMenu" xPosition="before" style="overflow: hidden !important">
+      <div class="menu-header" (click)="$event.stopPropagation()">
+        <div class="menu-avatar">{{ initials() }}</div>
+        <div class="menu-identity">
+          <strong>{{ displayName() }}</strong>
+          <span>{{ email() }}</span>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <button mat-menu-item (click)="logout()" [disabled]="signingOut()">
+        <mat-icon>logout</mat-icon>
+        <span>{{ signingOut() ? 'Signing out…' : 'Sign out' }}</span>
+      </button>
+    </mat-menu>
 
     <button
       mat-icon-button
-      color="warn">
-
+      color="warn"
+      matTooltip="Sign out"
+      aria-label="Sign out"
+      [disabled]="signingOut()"
+      (click)="logout()"
+    >
       <mat-icon>logout</mat-icon>
-
     </button>
-
   </div>
-
 </mat-toolbar>

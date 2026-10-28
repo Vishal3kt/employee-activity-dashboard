@@ -18,21 +18,18 @@
 
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 
-  transition: all .25s ease;
+  transition: all 0.25s ease;
 
   border: 1px solid #ececec;
 }
 
 .card:hover {
-
   transform: translateY(-4px);
 
-  box-shadow: 0 10px 25px rgba(0, 0, 0, .12);
-
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
 .icon {
-
   width: 58px;
 
   height: 58px;
@@ -46,11 +43,9 @@
   justify-content: center;
 
   flex-shrink: 0;
-
 }
 
 .icon mat-icon {
-
   color: white;
 
   font-size: 28px;
@@ -58,19 +53,15 @@
   width: 28px;
 
   height: 28px;
-
 }
 
 .content {
-
   display: flex;
-
+  align-items: center;
   flex-direction: column;
-
 }
 
 .content h2 {
-
   margin: 0;
 
   font-size: 30px;
@@ -80,11 +71,9 @@
   color: #1f2937;
 
   line-height: 1;
-
 }
 
 .content p {
-
   margin: 6px 0 0;
 
   font-size: 14px;
@@ -92,7 +81,6 @@
   color: #6b7280;
 
   font-weight: 500;
-
 }
 
 .blue {
@@ -116,29 +104,25 @@
 }
 
 @media (max-width: 768px) {
-
   .cards {
     grid-template-columns: repeat(2, 1fr);
   }
-
 }
 
 @media (max-width: 500px) {
-
   .cards {
     grid-template-columns: 1fr;
   }
-
 }
 
 .clickable {
   cursor: pointer;
-  transition: .25s;
+  transition: 0.25s;
 }
 
 .clickable:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 .content small {

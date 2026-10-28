@@ -1,22 +1,78 @@
-<div class="login-page">
-
-    <div class="login-card">
-
-        <h1>Employee Activity Dashboard</h1>
-
-        <p>
-            Sign in with your Microsoft 365 account
-        </p>
-
-        <button
-            mat-raised-button
-            color="primary"
-            (click)="login()">
-
-            {{ 'Login with Microsoft' }}
-
-        </button>
-
+<main class="login-page">
+  <!-- Sign-in -->
+  <section class="auth">
+    <div class="product">
+      <mat-icon>analytics</mat-icon>
+      <span>Employee Activity</span>
     </div>
 
-</div>
+    <div class="auth-body">
+      <h1>Sign in</h1>
+
+      <p class="intro">
+        Use your Microsoft work account. Viewing sign-in logs needs the Reports Reader, Security
+        Reader or Global Reader role.
+      </p>
+
+      @if (error()) {
+        <div class="alert" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <button
+        mat-flat-button
+        class="sign-in-btn"
+        [disabled]="status() !== 'idle'"
+        (click)="login()"
+      >
+        <span class="btn-content">
+          @if (status() === 'idle') {
+            <mat-icon>login</mat-icon>
+            <span>
+              {{ rememberedUser() ? 'Continue as ' + rememberedUser() : 'Sign in with Microsoft' }}
+            </span>
+          } @else {
+            <mat-spinner diameter="18"></mat-spinner>
+            <span>{{ busyLabel() }}</span>
+          }
+        </span>
+      </button>
+
+      @if (rememberedUser() && status() === 'idle') {
+        <button type="button" class="switch-account" (click)="useDifferentAccount()">
+          Use a different account
+        </button>
+      }
+
+      <p class="fine-print">
+        <mat-icon>lock</mat-icon>
+        Your password goes to Microsoft, never to this app.
+      </p>
+    </div>
+
+    <p class="footer">Data from Microsoft Graph sign-in logs</p>
+  </section>
+
+  <!-- Preview -->
+  <section class="preview" aria-hidden="true">
+    <h2>Every sign-in across your tenant, in one place.</h2>
+
+    <ul class="log">
+      @for (row of sampleLog; track $index; let i = $index) {
+        <li [style.--i]="i">
+          <span class="time">{{ row.time }}</span>
+          <span class="initials">{{ row.initials }}</span>
+          <span class="city">{{ row.city }}</span>
+          <span class="app">{{ row.app }}</span>
+          <span class="result" [class.ok]="row.ok" [class.fail]="!row.ok">
+            {{ row.ok ? 'Success' : 'Failed' }}
+          </span>
+        </li>
+      }
+    </ul>
+
+    <p class="preview-note">Illustrative data</p>
+  </section>
+</main>

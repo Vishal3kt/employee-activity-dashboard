@@ -1,0 +1,69 @@
+<section class="loader" role="status" aria-live="polite">
+  <!-- What's happening right now -->
+  <div class="progress">
+    <ol class="steps">
+      @for (step of steps; track step.key; let i = $index) {
+        <li [class]="stateOf(i)">
+          <span class="marker">
+            @switch (stateOf(i)) {
+              @case ('done') {
+                <mat-icon>check_circle</mat-icon>
+              }
+              @case ('active') {
+                <mat-spinner diameter="18" strokeWidth="2.5"></mat-spinner>
+              }
+              @default {
+                <span class="dot"></span>
+              }
+            }
+          </span>
+
+          <span class="label">{{ step.label }}</span>
+        </li>
+      }
+    </ol>
+
+    @if (slow()) {
+      <p class="slow-hint">
+        <mat-icon>info</mat-icon>
+        Still working. Microsoft Graph can take up to 30 seconds to return sign-in logs for larger
+        organisations.
+      </p>
+    }
+  </div>
+
+  <!-- Placeholder of the dashboard that's on its way -->
+  <div class="skeleton" aria-hidden="true">
+    <div class="sk-cards">
+      @for (card of cards; track card) {
+        <div class="sk-card">
+          <span class="sk sk-icon"></span>
+          <div class="sk-card-text">
+            <span class="sk sk-number"></span>
+            <span class="sk sk-caption"></span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="sk-table">
+      <div class="sk-table-head">
+        <span class="sk sk-title"></span>
+        <span class="sk sk-filter"></span>
+        <span class="sk sk-search"></span>
+      </div>
+
+      @for (row of rows; track row) {
+        <div class="sk-row">
+          <span class="sk sk-avatar"></span>
+          <span class="sk sk-name"></span>
+          <span class="sk sk-chip"></span>
+          <span class="sk sk-short"></span>
+          <span class="sk sk-short"></span>
+          <span class="sk sk-medium"></span>
+          <span class="sk sk-pill"></span>
+        </div>
+      }
+    </div>
+  </div>
+</section>

@@ -31,20 +31,14 @@ export const msalInstance =
       authority:
         'https://login.microsoftonline.com/818467cf-44b9-45a5-a41a-1ef924fcd795',
 
-
-      redirectUri: redirectUri,
-
-
-      postLogoutRedirectUri: redirectUri
-
+      redirectUri: window.location.origin + '/login',
+      postLogoutRedirectUri: window.location.origin + '/login',
+      // navigateToLoginRequestUrl: false
     },
 
-
     cache: {
-
       cacheLocation:
         BrowserCacheLocation.LocalStorage
-
     },
 
 

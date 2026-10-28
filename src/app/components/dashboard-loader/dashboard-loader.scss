@@ -1,0 +1,288 @@
+:host {
+  --ink: #172033;
+  --ink-soft: #5a6577;
+  --accent: #1f4fd1;
+  --ok: #12805c;
+  --line: #e3e8ec;
+  --paper: #ffffff;
+  --bone: #e8eef0;
+  --bone-light: #f4f7f8;
+
+  display: block;
+  min-height: calc(100vh - 72px);
+  padding: 24px;
+  background: #f7f9fc;
+  color: var(--ink);
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ---------- Progress steps ---------- */
+
+.progress {
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    transition: color 0.2s ease;
+
+    &.active {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    &.done {
+      color: var(--ink);
+    }
+  }
+}
+
+.marker {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    color: var(--ok);
+  }
+
+  mat-spinner {
+    --mdc-circular-progress-active-indicator-color: var(--accent);
+    --mat-progress-spinner-active-indicator-color: var(--accent);
+  }
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border: 2px solid #c3ccd3;
+  border-radius: 50%;
+}
+
+.slow-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.5;
+
+  mat-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    color: var(--accent);
+  }
+}
+
+/* ---------- Skeleton ---------- */
+
+.sk {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--bone) 0%, var(--bone-light) 45%, var(--bone) 90%);
+  background-size: 300% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+.sk-cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sk-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+
+.sk-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.sk-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.sk-number {
+  width: 48px;
+  height: 22px;
+}
+.sk-caption {
+  width: 80%;
+  height: 12px;
+}
+
+.sk-table {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.sk-table-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sk-title {
+  width: 180px;
+  height: 20px;
+  margin-right: auto;
+}
+.sk-filter {
+  width: 140px;
+  height: 40px;
+  border-radius: 8px;
+}
+.sk-search {
+  width: 260px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+.sk-row {
+  display: grid;
+  grid-template-columns: 36px 1.6fr 1fr 0.8fr 0.8fr 1fr 80px;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  /* Fade lower rows so the placeholder reads as "more below" */
+  @for $i from 5 through 8 {
+    &:nth-child(#{$i + 1}) {
+      opacity: 1 - ($i - 4) * 0.2;
+    }
+  }
+}
+
+.sk-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+.sk-name {
+  width: 70%;
+  height: 14px;
+}
+.sk-chip {
+  width: 90px;
+  height: 24px;
+  border-radius: 999px;
+}
+.sk-short {
+  width: 70%;
+  height: 12px;
+}
+.sk-medium {
+  width: 85%;
+  height: 12px;
+}
+.sk-pill {
+  width: 72px;
+  height: 26px;
+  border-radius: 999px;
+}
+
+/* ---------- Responsive and motion ---------- */
+
+@media (max-width: 1100px) {
+  .sk-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  :host {
+    padding: 16px;
+  }
+
+  .steps {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sk-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sk-filter,
+  .sk-search {
+    display: none;
+  }
+
+  .sk-row {
+    grid-template-columns: 36px 1fr 80px;
+
+    .sk-chip,
+    .sk-short,
+    .sk-medium {
+      display: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk {
+    animation: none;
+    background: var(--bone);
+  }
+}

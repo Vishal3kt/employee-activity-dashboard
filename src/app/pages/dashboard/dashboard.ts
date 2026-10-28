@@ -1,113 +1,93 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TimeoutError, finalize, timeout } from 'rxjs';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 import { Header } from '../../components/header/header';
 import { DashboardCards } from '../../components/dashboard-cards/dashboard-cards';
 import { EmployeeTable } from '../../components/employee-table/employee-table';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DashboardLoader } from '../../components/dashboard-loader/dashboard-loader';
 import { GraphService } from '../../services/graph';
-import { finalize } from 'rxjs';
+import { AuthService } from '../../services/auth';
 import { EmployeeActivity } from '../../models/employee.model';
-// import { BrowserChart } from '../../components/browser-chart/browser-chart';
-// import { ApplicationChart } from '../../components/application-chart/application-chart';
-// import { CityChart } from '../../components/city-chart/city-chart';
-import { MsalService } from '@azure/msal-angular';
-import { CommonModule } from '@angular/common';
+
+/** Give up and show an error instead of spinning forever. */
+const LOAD_TIMEOUT_MS = 45_000;
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    Header,
-    DashboardCards,
-    CommonModule,
-    EmployeeTable,
-      MatProgressSpinnerModule
-    // BrowserChart,
-    // ApplicationChart,
-    // CityChart
-  ],
+  imports: [Header, DashboardCards, EmployeeTable, DashboardLoader, MatButtonModule, MatIconModule],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.scss'
+  styleUrl: './dashboard.scss',
 })
-export class Dashboard implements OnInit, OnDestroy {
+export class Dashboard implements OnInit {
+  private graph = inject(GraphService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
-  employees: EmployeeActivity[] = [];
+  // Signals update the view reliably, with or without zone.js
+  readonly employees = signal<EmployeeActivity[]>([]);
+  readonly selectedApplication = signal('');
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly stage = this.graph.stage;
 
-selectedApplication = '';
-loading = true;
-
-  constructor(
-    private graph: GraphService,
-    private msal: MsalService
-  ) {
-      console.log('Dashboard Constructor');
-  }
-
- ngOnInit() { console.log('Dashboard OnInit');
-
-  const account =
-    this.msal.instance.getActiveAccount() ??
-    this.msal.instance.getAllAccounts()[0];
-
-  if (account) {
-
-    this.msal.instance.setActiveAccount(account);
-
-    console.log('Active Account:', account);
-
-    this.loadData();
-
-  } else {
-
-    console.log('No account found');
-
-  }
-
-}
-
-ngOnDestroy() {
-  console.log('Dashboard Destroy');
-}
-
-loadData() {
-
-  console.log('Loading data...');
-
-  this.loading = false;
-
-  this.graph.getEmployees().subscribe({
-
-    next: data => {
-console.log('Next called');
-      console.log('Dashboard Next');
-      console.log(data.length);
-
-      this.employees = data;
-      this.loading = false;
- console.log(this.loading);
-  console.log(this.employees.length);
-    },
-
-    error: err => {
-
-      console.log('Dashboard Error');
-      console.error(err);
-
-      this.loading = false;
-
-    },
-
-    complete: () => {
-
-      console.log('Completed');
-
+  ngOnInit(): void {
+    // Old code stopped here with the spinner still showing.
+    // Now a missing account goes back to the login page.
+    if (!this.auth.isLoggedIn) {
+      console.warn('[Dashboard] No account, returning to login');
+      this.router.navigate(['/login'], { replaceUrl: true });
+      return;
     }
 
-  });
+    this.loadData();
+  }
 
-}
-onApplicationSelected(application: any) {
-  this.selectedApplication = application;
+  loadData(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
+    const start = performance.now();
+
+    this.graph
+      .getEmployees()
+      .pipe(
+        timeout({ first: LOAD_TIMEOUT_MS }),
+        finalize(() => {
+          this.loading.set(false);
+          console.log(`[Dashboard] finished in ${Math.round(performance.now() - start)} ms`);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (data) => this.employees.set(data),
+        error: (err) => this.error.set(describeLoadError(err)),
+      });
+  }
+
+  onApplicationSelected(application: string): void {
+    this.selectedApplication.set(application);
+  }
 }
 
+function describeLoadError(err: any): string {
+  if (err instanceof TimeoutError) {
+    return 'Microsoft Graph didn’t respond within 45 seconds. Try again, or load a shorter date range.';
+  }
+
+  if (err?.status === 403) {
+    return 'Your account can’t read sign-in logs. Ask an administrator for the Reports Reader or Security Reader role.';
+  }
+
+  if (err?.status === 401) {
+    return 'Your session has expired. Sign out and sign in again.';
+  }
+
+  return 'Sign-in activity couldn’t be loaded. Check your connection and try again.';
 }

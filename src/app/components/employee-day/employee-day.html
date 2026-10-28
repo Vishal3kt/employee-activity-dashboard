@@ -1,0 +1,183 @@
+<div class="panel">
+  <!-- Who -->
+  <header class="head">
+    <div class="identity">
+      <div class="avatar">{{ initials }}</div>
+      <div class="who">
+        <h2>{{ employee.name }}</h2>
+        <span>{{ employee.email }}</span>
+      </div>
+    </div>
+
+    <button mat-icon-button (click)="close()" aria-label="Close">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <!-- Which day -->
+  <nav class="day-nav" aria-label="Choose a day">
+    <button mat-icon-button (click)="shiftDay(-1)" aria-label="Previous day">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+
+    <label class="day-picker">
+      <span class="day-text">{{ day() | date: 'EEEE, d MMMM y' }}</span>
+      <span class="window">{{ windowLabel }}</span>
+      <mat-icon>calendar_today</mat-icon>
+      <input
+        type="date"
+        [value]="dayValue()"
+        [max]="todayValue"
+        (change)="pickDate($event)"
+        aria-label="Pick a date"
+      />
+    </label>
+
+    <button mat-icon-button (click)="shiftDay(1)" [disabled]="isToday()" aria-label="Next day">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    @if (!isToday()) {
+      <button mat-button class="today-btn" (click)="goToday()">Today</button>
+    }
+  </nav>
+
+  <div class="body">
+    @if (loading()) {
+      <div class="state">
+        <mat-spinner diameter="36"></mat-spinner>
+        <p>Loading this day’s sign-ins…</p>
+      </div>
+    } @else if (error()) {
+      <div class="state" role="alert">
+        <mat-icon class="state-icon error">cloud_off</mat-icon>
+        <p>{{ error() }}</p>
+        <button mat-flat-button color="primary" (click)="load()">Try again</button>
+      </div>
+    } @else {
+      @if (summary(); as s) {
+        @if (s.events === 0) {
+          <div class="state">
+            <mat-icon class="state-icon">event_busy</mat-icon>
+            <p>
+              <strong>No sign-in activity between {{ windowLabel }} on this day.</strong>
+            </p>
+            <p class="muted">Use the arrows to check another day.</p>
+          </div>
+        } @else {
+          <!-- Summary -->
+          <dl class="stats">
+            <div>
+              <dt>First activity</dt>
+              <dd>{{ s.firstActivity | date: 'h:mm a' }}</dd>
+            </div>
+            <div>
+              <dt>Last activity</dt>
+              <dd>{{ s.lastActivity | date: 'h:mm a' }}</dd>
+            </div>
+            <div>
+              <dt>Hours with activity</dt>
+              <dd>
+                {{ s.activeHours }} <small>of {{ s.windowHours }}</small>
+              </dd>
+            </div>
+            <div [class.has-gaps]="s.gaps > 0">
+              <dt>No activity</dt>
+              <dd>
+                {{ s.gaps ? formatMinutes(s.noActivityMinutes) : 'None' }}
+                @if (s.gaps) {
+                  <small>{{ s.gaps }} gap{{ s.gaps === 1 ? '' : 's' }}</small>
+                }
+              </dd>
+            </div>
+            <div [class.has-failures]="s.failed > 0">
+              <dt>Failed sign-ins</dt>
+              <dd>{{ s.failed }}</dd>
+            </div>
+          </dl>
+
+          <!-- Apps by hour -->
+          <section class="section">
+            <h3>Apps by hour</h3>
+
+            <div class="grid-scroll">
+              <div class="hour-grid" role="table" aria-label="Sign-ins per app per hour">
+                <div class="grid-row axis" role="row">
+                  <span class="app-name" role="columnheader"></span>
+                  @for (h of hours; track h) {
+                    <span class="tick" role="columnheader">{{
+                      h % 2 === 0 ? hourLabel(h) : ''
+                    }}</span>
+                  }
+                </div>
+
+                @for (row of s.hourRows; track row.app) {
+                  <div class="grid-row" role="row">
+                    <span class="app-name" role="rowheader" [title]="row.app">{{ row.app }}</span>
+                    @for (count of row.counts; track $index) {
+                      <span
+                        class="cell"
+                        role="cell"
+                        [attr.data-level]="level(count)"
+                        [attr.title]="cellTitle(row.app, $index, count) || null"
+                        [attr.aria-label]="cellTitle(row.app, $index, count) || null"
+                      >
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="legend" aria-hidden="true">
+              <span>Fewer sign-ins</span>
+              <span class="cell" data-level="1"></span>
+              <span class="cell" data-level="2"></span>
+              <span class="cell" data-level="3"></span>
+              <span>More</span>
+            </div>
+          </section>
+
+          <!-- Timeline -->
+          <section class="section">
+            <h3>Timeline</h3>
+
+            <ol class="timeline">
+              @for (item of s.timeline; track trackItem($index, item)) {
+                <li
+                  [class.gap]="item.kind === 'gap'"
+                  [class.failed]="!item.success"
+                  [class.background]="item.kind === 'signin' && !item.interactive && item.success"
+                >
+                  <time>
+                    {{ item.start | date: 'h:mm a' }}
+                    @if (item.count > 1 || item.kind === 'gap') {
+                      <span class="until">to {{ item.end | date: 'h:mm a' }}</span>
+                    }
+                  </time>
+
+                  <span class="marker" aria-hidden="true"></span>
+
+                  <div class="what">
+                    <strong>{{ item.app }}</strong>
+                    <span>{{ item.label }}</span>
+                  </div>
+                </li>
+              }
+            </ol>
+          </section>
+
+          <p class="source-note">
+            <mat-icon>info</mat-icon>
+            <span>
+              Built from Microsoft Entra sign-in logs between {{ windowLabel }}, including
+              background sign-ins that apps make about once an hour while open. “No activity” means
+              no app signed in for {{ idleThreshold }} or longer. It’s a strong sign the person was
+              away, but it isn’t keyboard-level idle time.
+            </span>
+          </p>
+        }
+      }
+    }
+  </div>
+</div>
