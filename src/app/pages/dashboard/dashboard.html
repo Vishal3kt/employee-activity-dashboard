@@ -1,11 +1,12 @@
-<app-header></app-header>
+<app-header [lastUpdated]="lastUpdated()" [refreshing]="refreshing()" (refresh)="refresh()">
+</app-header>
 
 @if (loading()) {
   <app-dashboard-loader [stage]="stage()"></app-dashboard-loader>
 } @else if (error()) {
   <div class="state-message" role="alert">
     <mat-icon>cloud_off</mat-icon>
-    <h3>Sign-in activity isn’t available</h3>
+    <h3>Employee activity isn’t available</h3>
     <p>{{ error() }}</p>
     <button mat-flat-button color="primary" (click)="loadData()">
       <mat-icon>refresh</mat-icon>
@@ -13,12 +14,58 @@
     </button>
   </div>
 } @else {
-  <app-dashboard-cards
-    [employees]="employees()"
-    (applicationSelected)="onApplicationSelected($event)"
-  >
-  </app-dashboard-cards>
+  <main class="page">
+    @if (refreshError()) {
+      <div class="refresh-error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>
+          Couldn’t refresh: {{ refreshError() }} Showing data from
+          {{ lastUpdated() | date: 'h:mm a' }}.
+        </span>
+        <button mat-button (click)="refresh()">Try again</button>
+        <button mat-icon-button aria-label="Dismiss" (click)="refreshError.set(null)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    }
 
-  <app-employee-table [employees]="employees()" [selectedApplication]="selectedApplication()">
-  </app-employee-table>
+    <!-- Today at a glance -->
+    <dl class="stats">
+      <div class="stat">
+        <dt>Employees</dt>
+        <dd>{{ stats().total }}</dd>
+      </div>
+
+      <div class="stat">
+        <dt>Signed in today</dt>
+        <dd>{{ stats().signedIn }}</dd>
+      </div>
+
+      <div class="stat" [class.attention]="stats().notYet > 0">
+        <dt>Not signed in yet</dt>
+        <dd>{{ stats().notYet }}</dd>
+      </div>
+
+      <div class="stat" [class.alert]="stats().withFailures > 0">
+        <dt>With failed sign-ins</dt>
+        <dd>{{ stats().withFailures }}</dd>
+      </div>
+
+      <!-- Only shown when FEATURES.teamsPresence is on -->
+      @if (presenceEnabled) {
+        <div class="stat">
+          <dt><span class="dot available"></span>Available now</dt>
+          <dd>{{ stats().available }}</dd>
+        </div>
+
+        <div class="stat">
+          <dt><span class="dot away"></span>Away now</dt>
+          <dd>{{ stats().away }}</dd>
+        </div>
+      }
+    </dl>
+
+    <app-employee-list [rows]="rows()" [presenceEnabled]="presenceEnabled" (view)="openDay($event)">
+    </app-employee-list>
+  </main>
 }

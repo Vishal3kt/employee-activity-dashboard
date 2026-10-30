@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
+import { FEATURES } from './features';
 import { AccountInfo, InteractionStatus } from '@azure/msal-browser';
 import { BehaviorSubject, Observable, filter, firstValueFrom, from, map, take } from 'rxjs';
 
@@ -11,7 +12,13 @@ import { BehaviorSubject, Observable, filter, firstValueFrom, from, map, take } 
  */
 
 /** Scopes the dashboard needs. Reuse these in GraphService too. */
-export const GRAPH_SCOPES = ['User.Read', 'AuditLog.Read.All', 'Directory.Read.All'];
+export const GRAPH_SCOPES = [
+  'User.Read',
+  'AuditLog.Read.All',
+  'Directory.Read.All',
+  // Only requested when the Teams presence feature is switched on
+  ...(FEATURES.teamsPresence ? ['Presence.Read.All'] : []),
+];
 
 /**
  * Where the sign-in popup returns. main.ts handles this path with MSAL's

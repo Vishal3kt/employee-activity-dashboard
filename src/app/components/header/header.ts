@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -30,7 +30,16 @@ import { AuthService } from '../../services/auth';
 export class Header {
   private auth = inject(AuthService);
 
-  lastUpdated = new Date();
+  /** When the dashboard data was last loaded. null until the first load. */
+  readonly lastUpdated = input<Date | null>(null);
+
+  /** True while a refresh is running: disables the button and spins the icon. */
+  readonly refreshing = input(false);
+
+  /** Hide the Refresh button on pages that have nothing to refresh. */
+  readonly showRefresh = input(true);
+
+  readonly refresh = output<void>();
 
   readonly account = toSignal(this.auth.account$, { initialValue: null });
 
@@ -50,6 +59,12 @@ export class Header {
   );
 
   readonly signingOut = signal(false);
+
+  onRefresh(): void {
+    if (!this.refreshing()) {
+      this.refresh.emit();
+    }
+  }
 
   logout(): void {
     if (this.signingOut()) {

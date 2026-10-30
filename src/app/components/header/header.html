@@ -11,16 +11,25 @@
   </div>
 
   <div class="right">
-    <div class="updated">
-      <mat-icon style="margin-top: 6px">schedule</mat-icon>
-      <span>Updated {{ lastUpdated | date: 'hh:mm a' }}</span>
-    </div>
+    @if (showRefresh()) {
+      <div class="updated" aria-live="polite">
+        <mat-icon style="margin-top: 6px">schedule</mat-icon>
+        <span [matTooltip]="lastUpdated() ? (lastUpdated() | date: 'EEEE d MMMM, h:mm:ss a') : ''">
+          @if (refreshing()) {
+            Updating…
+          } @else if (lastUpdated()) {
+            Updated {{ lastUpdated() | date: 'h:mm a' }}
+          } @else {
+            Loading…
+          }
+        </span>
+      </div>
 
-    <!-- Wired up in the next feature -->
-    <button mat-flat-button color="primary">
-      <mat-icon>refresh</mat-icon>
-      Refresh
-    </button>
+      <button mat-flat-button color="primary" [disabled]="refreshing()" (click)="onRefresh()">
+        <mat-icon [class.spin]="refreshing()">refresh</mat-icon>
+        {{ refreshing() ? 'Refreshing…' : 'Refresh' }}
+      </button>
+    }
 
     <!-- Profile menu -->
     <button
@@ -39,7 +48,7 @@
       <mat-icon class="chevron">expand_more</mat-icon>
     </button>
 
-    <mat-menu #profileMenu="matMenu" xPosition="before" style="overflow: hidden !important">
+    <mat-menu #profileMenu="matMenu" xPosition="before">
       <div class="menu-header" (click)="$event.stopPropagation()">
         <div class="menu-avatar">{{ initials() }}</div>
         <div class="menu-identity">

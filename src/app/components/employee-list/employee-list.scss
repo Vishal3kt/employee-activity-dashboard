@@ -1,0 +1,421 @@
+:host {
+  --ink: #172033;
+  --ink-soft: #5a6577;
+  --line: #e3e8ec;
+  --field-line: #cfd8dc;
+  --mist: #f3f6f8;
+  --paper: #ffffff;
+  --accent: #1f4fd1;
+  --accent-soft: rgba(31, 79, 209, 0.08);
+  --ok: #12805c;
+  --fail: #b42318;
+  --amber: #b26a00;
+
+  display: block;
+  color: var(--ink);
+
+  /*
+   * Angular Material overrides, scoped to this component only.
+   * The global Material theme is untouched.
+   */
+
+  /* System colours (anything Material derives from them) */
+  --mat-sys-primary: var(--accent);
+  --mat-sys-outline: var(--field-line);
+  --mat-sys-outline-variant: var(--line);
+  --mat-sys-on-surface: var(--ink);
+  --mat-sys-on-surface-variant: var(--ink-soft);
+  --mat-sys-surface: var(--paper);
+
+  /* Outlined form fields: compact, 14px, our blue on focus */
+  --mat-form-field-container-height: 44px;
+  --mat-form-field-container-vertical-padding: 10px;
+  --mat-form-field-container-text-font: inherit;
+  --mat-form-field-container-text-size: 14px;
+  --mat-form-field-outlined-label-text-font: inherit;
+  --mat-form-field-outlined-label-text-size: 14px;
+  --mat-form-field-outlined-container-shape: 8px;
+  --mat-form-field-outlined-outline-color: var(--field-line);
+  --mat-form-field-outlined-hover-outline-color: var(--ink-soft);
+  --mat-form-field-outlined-focus-outline-color: var(--accent);
+  --mat-form-field-outlined-label-text-color: var(--ink-soft);
+  --mat-form-field-outlined-hover-label-text-color: var(--ink-soft);
+  --mat-form-field-outlined-focus-label-text-color: var(--accent);
+  --mat-form-field-outlined-input-text-color: var(--ink);
+  --mat-form-field-outlined-input-text-placeholder-color: #8a94a3;
+  --mat-form-field-outlined-caret-color: var(--accent);
+  --mat-form-field-leading-icon-color: var(--ink-soft);
+
+  /* Selects */
+  --mat-select-trigger-text-font: inherit;
+  --mat-select-trigger-text-size: 14px;
+  --mat-select-trigger-text-color: var(--ink);
+  --mat-select-enabled-arrow-color: var(--ink-soft);
+  --mat-select-focused-arrow-color: var(--accent);
+
+  /* Table */
+  --mat-table-background-color: var(--paper);
+  --mat-table-header-headline-color: var(--ink-soft);
+  --mat-table-header-container-height: 44px;
+  --mat-table-row-item-label-text-color: var(--ink);
+  --mat-table-row-item-label-text-size: 14px;
+  --mat-table-row-item-outline-color: var(--line);
+  --mat-table-row-item-container-height: 60px;
+  --mat-sort-arrow-color: var(--ink-soft);
+
+  /* Paginator */
+  --mat-paginator-container-background-color: var(--paper);
+  --mat-paginator-container-text-color: var(--ink-soft);
+  --mat-paginator-container-text-font: inherit;
+  --mat-paginator-container-text-size: 13px;
+  --mat-paginator-container-size: 52px;
+  --mat-paginator-enabled-icon-color: var(--ink);
+  --mat-paginator-disabled-icon-color: #c3ccd3;
+  --mat-paginator-select-trigger-text-size: 13px;
+  --mat-paginator-form-field-container-height: 36px;
+  --mat-paginator-form-field-container-vertical-padding: 6px;
+
+  /* "View day" button */
+  --mat-button-outlined-label-text-color: var(--accent);
+  --mat-button-outlined-outline-color: var(--field-line);
+  --mat-button-outlined-container-shape: 8px;
+  --mat-button-outlined-state-layer-color: var(--accent);
+  --mat-button-outlined-ripple-color: var(--accent-soft);
+  --mat-button-outlined-container-height: 34px;
+  --mat-button-outlined-label-text-size: 13px;
+
+  /* "Clear filters" text button in the empty state */
+  --mat-button-text-label-text-color: var(--accent);
+}
+
+.list {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  overflow: hidden;
+}
+
+/* ---------- Toolbar ---------- */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.title {
+  h2 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  span {
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+}
+
+.link {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  mat-form-field {
+    width: 190px;
+  }
+
+  .search {
+    width: 280px;
+  }
+}
+
+/* ---------- Table ---------- */
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 960px;
+}
+
+th.mat-mdc-header-cell {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background: var(--mist);
+  border-bottom-color: var(--line);
+}
+
+/* Narrow columns keep to one line; the employee column takes the rest */
+.mat-column-department {
+  width: 22%;
+}
+.mat-column-presence,
+.mat-column-firstSignIn,
+.mat-column-lastSignIn,
+.mat-column-signIns,
+.mat-column-action {
+  width: 1%;
+  white-space: nowrap;
+}
+
+td.mat-mdc-cell,
+th.mat-mdc-header-cell {
+  padding-left: 16px;
+  padding-right: 16px;
+
+  &:first-child {
+    padding-left: 20px;
+  }
+
+  &:last-child {
+    padding-right: 20px;
+    text-align: right;
+  }
+}
+
+mat-paginator {
+  border-top: 1px solid var(--line);
+}
+
+tr.clickable {
+  cursor: pointer;
+
+  &:hover td {
+    background: #f8fafc;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e6ecfb;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.who,
+.dept,
+.last {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  strong {
+    font-weight: 600;
+  }
+
+  span,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    color: var(--ink-soft);
+    font-size: 12px;
+  }
+}
+
+.who span {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.time,
+.count {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.not-yet {
+  color: var(--ink-soft);
+}
+
+.failed {
+  margin-left: 8px;
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fdf3f2;
+  color: var(--fail);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.view {
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- Presence ---------- */
+
+.presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+
+  &::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #9aa5b1;
+  }
+
+  &[data-state='available']::before {
+    background: var(--ok);
+  }
+  &[data-state='busy']::before,
+  &[data-state='dnd']::before {
+    background: var(--fail);
+  }
+  &[data-state='meeting']::before {
+    background: #7c3aed;
+  }
+  &[data-state='away']::before {
+    background: var(--amber);
+  }
+  &[data-state='offline']::before {
+    background: transparent;
+    box-shadow: inset 0 0 0 2px #9aa5b1;
+  }
+}
+
+/* ---------- Empty ---------- */
+
+td.empty {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--ink-soft);
+
+  mat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 36px;
+  }
+
+  p {
+    margin: 8px 0;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .filters,
+  .filters mat-form-field,
+  .filters .search {
+    width: 100%;
+  }
+}
+
+/*
+ * Dropdown lists (Department, Status, page size).
+ * They open in an overlay outside this component, so ::ng-deep is needed to
+ * reach them. Every rule starts with .employee-list-select (set via
+ * panelClass), so only these three dropdowns are affected.
+ */
+::ng-deep .mat-mdc-select-panel.employee-list-select {
+  --mat-select-panel-background-color: #ffffff;
+  --mat-option-label-text-font: inherit;
+  --mat-option-label-text-size: 14px;
+  --mat-option-label-text-color: #172033;
+  --mat-option-hover-state-layer-color: rgba(31, 79, 209, 0.06);
+  --mat-option-focus-state-layer-color: rgba(31, 79, 209, 0.08);
+  --mat-option-selected-state-layer-color: rgba(31, 79, 209, 0.1);
+  --mat-option-selected-state-label-text-color: #1f4fd1;
+  --mat-pseudo-checkbox-minimal-selected-checkmark-color: #1f4fd1;
+
+  min-width: 220px;
+  max-width: 360px;
+  padding: 4px 0;
+  border: 1px solid #e3e8ec;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.25);
+
+  .mat-mdc-option {
+    min-height: 38px;
+    padding: 0 14px;
+    background-color: transparent;
+
+    .mdc-list-item__primary-text {
+      color: #172033;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.35;
+      white-space: nowrap;
+    }
+
+    &:hover:not(.mdc-list-item--disabled) {
+      background-color: rgba(31, 79, 209, 0.06);
+    }
+
+    &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+      background-color: rgba(31, 79, 209, 0.1);
+
+      .mdc-list-item__primary-text {
+        color: #1f4fd1;
+        font-weight: 600;
+      }
+    }
+
+    .mat-pseudo-checkbox-minimal.mat-pseudo-checkbox-checked::after {
+      color: #1f4fd1;
+    }
+  }
+}

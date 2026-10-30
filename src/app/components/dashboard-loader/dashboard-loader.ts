@@ -20,7 +20,7 @@ export class DashboardLoader implements OnInit, OnDestroy {
 
   readonly steps = [
     { key: 'token', label: 'Confirming your access' },
-    { key: 'fetching', label: 'Reading sign-ins from Microsoft Graph' },
+    { key: 'fetching', label: 'Loading employees and today’s sign-ins' },
     { key: 'preparing', label: 'Building your dashboard' },
   ] as const;
 

@@ -1,3 +1,12 @@
+/** What the day panel needs to open for a person. */
+export interface EmployeeDayData {
+  name: string;
+  /** userPrincipalName */
+  email: string;
+  /** Day to open on; defaults to today. */
+  day?: Date;
+}
+
 /** One sign-in event (interactive or background) for a single user. */
 export interface SignInEvent {
   id: string;

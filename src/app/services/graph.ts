@@ -9,6 +9,7 @@ import {
   finalize,
   forkJoin,
   map,
+  of,
   reduce,
   switchMap,
   tap,
@@ -18,30 +19,31 @@ import {
 import { MsalService } from '@azure/msal-angular';
 import { CacheLookupPolicy, InteractionRequiredAuthError } from '@azure/msal-browser';
 
-import { EmployeeActivity } from '../models/employee.model';
+import { FEATURES } from './features';
 import { SignInEvent } from '../models/day-activity.model';
+import {
+  Employee,
+  EmployeeRow,
+  PresenceState,
+  SignInLite,
+  TodaySummary,
+} from '../models/team.model';
 import { AuthService, GRAPH_SCOPES } from './auth';
 import { WORK_END_HOUR, WORK_START_HOUR } from './day-activity';
 
 /** What the dashboard is waiting on right now. Drives the loader steps. */
 export type LoadStage = 'idle' | 'token' | 'fetching' | 'preparing';
 
-/** How far back the dashboard loads sign-ins. Smaller = faster. */
-const SIGN_IN_DAYS = 7;
+const GRAPH_V1 = 'https://graph.microsoft.com/v1.0';
+const GRAPH_BETA = 'https://graph.microsoft.com/beta';
 
-/** Rows per dashboard request. Bigger pages are much slower. */
-const PAGE_SIZE = 500;
+/** Page caps: safety limits so a huge tenant can't hang the page. */
+const MAX_USER_PAGES = 20; // 20 × 999 users
+const MAX_TODAY_PAGES = 10; // 10 × 1000 interactive sign-ins
+const MAX_DAY_PAGES = 5; // 5 × 1000 events per type, one person
 
-/** Safety cap for one person's day: 5 pages of 1000 events per type. */
-const DAY_MAX_PAGES = 5;
-
-const SIGN_INS_V1 = 'https://graph.microsoft.com/v1.0/auditLogs/signIns';
-
-/**
- * Background (non-interactive) sign-ins are only available on the beta API.
- * Same permission (AuditLog.Read.All). Microsoft may change beta APIs.
- */
-const SIGN_INS_BETA = 'https://graph.microsoft.com/beta/auditLogs/signIns';
+/** Graph accepts up to 650 ids per presence request. */
+const PRESENCE_BATCH = 650;
 
 interface GraphPage<T> {
   value: T[];
@@ -56,42 +58,56 @@ export class GraphService {
 
   readonly stage = signal<LoadStage>('idle');
 
-  /** Dashboard list: interactive sign-ins for the last few days. */
-  getEmployees(): Observable<EmployeeActivity[]> {
+  /**
+   * Everyone in the organisation, each with today's sign-in summary
+   * (working day start until now), plus Teams presence if switched on.
+   */
+  getTeamToday(): Observable<EmployeeRow[]> {
     this.stage.set('token');
+    const start = performance.now();
 
     return this.accessToken().pipe(
       switchMap((token) => {
         this.stage.set('fetching');
 
-        const params = new HttpParams()
-          .set('$filter', `createdDateTime ge ${isoUtc(daysAgo(SIGN_IN_DAYS))}`)
-          .set('$top', PAGE_SIZE);
+        return forkJoin([this.fetchEmployees(token), this.fetchTodaySignIns(token)]).pipe(
+          switchMap(([employees, signIns]) => {
+            this.stage.set('preparing');
+            const rows = buildRows(employees, signIns);
 
-        const start = performance.now();
+            if (!FEATURES.teamsPresence) {
+              return of(rows);
+            }
 
-        return this.http
-          .get<GraphPage<any>>(SIGN_INS_V1, {
-            params,
-            headers: bearer(token),
-          })
-          .pipe(tap((res) => console.log(`[Graph] ${res.value.length} sign-ins in ${ms(start)}`)));
+            return this.fetchPresence(
+              token,
+              rows.map((r) => r.id),
+            ).pipe(map((presence) => applyPresence(rows, presence)));
+          }),
+        );
       }),
 
-      tap(() => this.stage.set('preparing')),
-      map((res) => res.value.map(toEmployeeActivity)),
+      tap((rows) => console.log(`[Graph] ${rows.length} employees in ${ms(start)}`)),
       finalize(() => this.stage.set('idle')),
     );
   }
 
+  /** Current Teams presence for these users. Only used when switched on. */
+  getPresence(userIds: string[]): Observable<Map<string, PresenceState>> {
+    if (!FEATURES.teamsPresence || userIds.length === 0) {
+      return of(new Map());
+    }
+
+    return this.accessToken().pipe(switchMap((token) => this.fetchPresence(token, userIds)));
+  }
+
   /**
-   * Every sign-in one person made during working hours (6 AM–6 PM local)
-   * on one day: interactive sign-ins plus background token renewals.
-   * Only that window is requested, so nothing outside it is downloaded.
+   * Every sign-in one person made during working hours on one day:
+   * interactive sign-ins plus background token renewals (Graph beta).
    */
   getUserDay(userPrincipalName: string, day: Date): Observable<SignInEvent[]> {
-    const from = new Date(day.getFullYear(), day.getMonth(), day.getDate(), WORK_START_HOUR);
-    const to = new Date(day.getFullYear(), day.getMonth(), day.getDate(), WORK_END_HOUR);
+    const from = atHour(day, WORK_START_HOUR);
+    const to = atHour(day, WORK_END_HOUR);
 
     const upn = userPrincipalName.replace(/'/g, "''");
     const base =
@@ -101,18 +117,24 @@ export class GraphService {
     const start = performance.now();
 
     return this.accessToken().pipe(
-      switchMap((token) =>
-        forkJoin([
-          this.fetchAll(`${base} and signInEventTypes/any(t: t eq 'interactiveUser')`, token).pipe(
+      switchMap((token) => {
+        const page = (filter: string) =>
+          this.fetchPages<any>(
+            `${GRAPH_BETA}/auditLogs/signIns`,
+            new HttpParams().set('$filter', filter).set('$top', 1000),
+            bearer(token),
+            MAX_DAY_PAGES,
+          );
+
+        return forkJoin([
+          page(`${base} and signInEventTypes/any(t: t eq 'interactiveUser')`).pipe(
             map((items) => items.map((i) => toSignInEvent(i, true))),
           ),
-
-          this.fetchAll(
-            `${base} and signInEventTypes/any(t: t eq 'nonInteractiveUser')`,
-            token,
-          ).pipe(map((items) => items.map((i) => toSignInEvent(i, false)))),
-        ]),
-      ),
+          page(`${base} and signInEventTypes/any(t: t eq 'nonInteractiveUser')`).pipe(
+            map((items) => items.map((i) => toSignInEvent(i, false))),
+          ),
+        ]);
+      }),
       map(([interactive, background]) =>
         [...interactive, ...background].sort((a, b) => a.time.getTime() - b.time.getTime()),
       ),
@@ -122,24 +144,113 @@ export class GraphService {
     );
   }
 
-  // ---------- internals ----------
+  // ---------- requests ----------
 
-  /** Follows @odata.nextLink up to DAY_MAX_PAGES pages. */
-  private fetchAll(filter: string, token: string): Observable<any[]> {
-    const headers = bearer(token);
-    const params = new HttpParams().set('$filter', filter).set('$top', 1000);
+  /** Enabled member accounts (optionally licensed only). */
+  private fetchEmployees(token: string): Observable<Employee[]> {
+    const filters = ['accountEnabled eq true', "userType eq 'Member'"];
+    let headers = bearer(token);
+    let params = new HttpParams()
+      .set('$select', 'id,displayName,mail,userPrincipalName,jobTitle,department,officeLocation')
+      .set('$top', 999);
+
+    if (FEATURES.licensedUsersOnly) {
+      // Counting licenses is an "advanced query": needs $count and this header
+      filters.push('assignedLicenses/$count ne 0');
+      params = params.set('$count', 'true');
+      headers = headers.set('ConsistencyLevel', 'eventual');
+    }
+
+    params = params.set('$filter', filters.join(' and '));
+
+    return this.fetchPages<any>(`${GRAPH_V1}/users`, params, headers, MAX_USER_PAGES).pipe(
+      map((users) => users.map(toEmployee)),
+    );
+  }
+
+  /** Today's interactive sign-ins, from the start of the working day. */
+  private fetchTodaySignIns(token: string): Observable<SignInLite[]> {
+    const today = new Date();
+    const from = atHour(today, WORK_START_HOUR);
+    const to = atHour(today, WORK_END_HOUR);
+
+    const params = new HttpParams()
+      .set('$filter', `createdDateTime ge ${isoUtc(from)} and createdDateTime lt ${isoUtc(to)}`)
+      .set('$top', 1000);
+
+    return this.fetchPages<any>(
+      `${GRAPH_V1}/auditLogs/signIns`,
+      params,
+      bearer(token),
+      MAX_TODAY_PAGES,
+    ).pipe(
+      map((items) =>
+        items.map((item) => ({
+          userId: item.userId,
+          time: new Date(item.createdDateTime),
+          success: item.status?.errorCode === 0,
+          app: item.appDisplayName?.trim() || 'Unknown app',
+        })),
+      ),
+    );
+  }
+
+  /** Presence for any number of users, in batches of 650. */
+  private fetchPresence(token: string, userIds: string[]): Observable<Map<string, PresenceState>> {
+    const batches: string[][] = [];
+    for (let i = 0; i < userIds.length; i += PRESENCE_BATCH) {
+      batches.push(userIds.slice(i, i + PRESENCE_BATCH));
+    }
+
+    if (batches.length === 0) {
+      return of(new Map());
+    }
+
+    return forkJoin(
+      batches.map((ids) =>
+        this.http.post<{ value: any[] }>(
+          `${GRAPH_V1}/communications/getPresencesByUserId`,
+          { ids },
+          { headers: bearer(token) },
+        ),
+      ),
+    ).pipe(
+      map((responses) => {
+        const result = new Map<string, PresenceState>();
+        for (const response of responses) {
+          for (const p of response.value) {
+            result.set(p.id, toPresenceState(p.availability, p.activity));
+          }
+        }
+        return result;
+      }),
+      // Presence is a bonus: if it fails, show the list without it
+      catchError((err) => {
+        console.warn('[Graph] Presence unavailable', err);
+        return of(new Map<string, PresenceState>());
+      }),
+    );
+  }
+
+  /** GET with @odata.nextLink paging, up to maxPages pages. */
+  private fetchPages<T>(
+    url: string,
+    params: HttpParams,
+    headers: HttpHeaders,
+    maxPages: number,
+  ): Observable<T[]> {
     let pages = 1;
 
-    return this.http.get<GraphPage<any>>(SIGN_INS_BETA, { params, headers }).pipe(
+    return this.http.get<GraphPage<T>>(url, { params, headers }).pipe(
       expand((page) => {
         const next = page['@odata.nextLink'];
-        if (!next || pages >= DAY_MAX_PAGES) {
+        if (!next || pages >= maxPages) {
           return EMPTY;
         }
         pages++;
-        return this.http.get<GraphPage<any>>(next, { headers });
+        return this.http.get<GraphPage<T>>(next, { headers });
       }),
-      reduce((all, page) => all.concat(page.value), [] as any[]),
+      reduce((all, page) => all.concat(page.value), [] as T[]),
     );
   }
 
@@ -171,22 +282,82 @@ export class GraphService {
   }
 }
 
-function toEmployeeActivity(item: any): EmployeeActivity {
+// ---------- mapping ----------
+
+function buildRows(employees: Employee[], signIns: SignInLite[]): EmployeeRow[] {
+  const byUser = new Map<string, TodaySummary>();
+
+  for (const s of signIns) {
+    let today = byUser.get(s.userId);
+    if (!today) {
+      today = { signIns: 0, failed: 0, firstSignIn: null, lastSignIn: null };
+      byUser.set(s.userId, today);
+    }
+
+    today.signIns++;
+    if (!s.success) {
+      today.failed++;
+    }
+    if (!today.firstSignIn || s.time < today.firstSignIn) {
+      today.firstSignIn = s.time;
+    }
+    if (!today.lastSignIn || s.time > today.lastSignIn) {
+      today.lastSignIn = s.time;
+      today.lastApp = s.app;
+    }
+  }
+
+  return employees
+    .map((e) => ({
+      ...e,
+      today: byUser.get(e.id) ?? { signIns: 0, failed: 0, firstSignIn: null, lastSignIn: null },
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function applyPresence(rows: EmployeeRow[], presence: Map<string, PresenceState>): EmployeeRow[] {
+  return rows.map((r) => ({ ...r, presence: presence.get(r.id) ?? 'unknown' }));
+}
+
+function toEmployee(u: any): Employee {
   return {
-    id: item.id,
-    name: item.userDisplayName,
-    email: item.userPrincipalName,
-    application: item.appDisplayName,
-    browser: item.deviceDetail?.browser,
-    operatingSystem: item.deviceDetail?.operatingSystem,
-    device: item.deviceDetail?.displayName,
-    ipAddress: item.ipAddress,
-    city: item.location?.city,
-    country: item.location?.countryOrRegion,
-    loginTime: item.createdDateTime,
-    status: item.status?.errorCode === 0 ? 'Active' : 'Failed',
-    resource: item.resourceDisplayName,
-  } as EmployeeActivity;
+    id: u.id,
+    name: u.displayName || u.userPrincipalName,
+    email: u.userPrincipalName,
+    jobTitle: u.jobTitle ?? undefined,
+    department: u.department ?? undefined,
+    officeLocation: u.officeLocation ?? undefined,
+  };
+}
+
+/** Teams availability + activity → one simple state. */
+function toPresenceState(availability: string, activity: string): PresenceState {
+  if (
+    activity === 'InAMeeting' ||
+    activity === 'InACall' ||
+    activity === 'InAConferenceCall' ||
+    activity === 'Presenting'
+  ) {
+    return 'meeting';
+  }
+
+  switch (availability) {
+    case 'Available':
+      return 'available';
+    case 'Busy':
+      return 'busy';
+    case 'DoNotDisturb':
+      return 'dnd';
+    case 'AvailableIdle':
+    case 'BusyIdle':
+    case 'BeRightBack':
+    case 'Away':
+      return 'away';
+    case 'Offline':
+      return 'offline';
+    default:
+      return 'unknown';
+  }
 }
 
 function toSignInEvent(item: any, interactive: boolean): SignInEvent {
@@ -206,15 +377,17 @@ function toSignInEvent(item: any, interactive: boolean): SignInEvent {
   };
 }
 
+// ---------- helpers ----------
+
 function bearer(token: string): HttpHeaders {
   return new HttpHeaders({ Authorization: `Bearer ${token}` });
 }
 
-function daysAgo(days: number): Date {
-  return new Date(Date.now() - days * 86_400_000);
+function atHour(day: Date, hour: number): Date {
+  return new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour);
 }
 
-/** Graph filters want UTC without milliseconds: 2026-10-28T00:00:00Z */
+/** Graph filters want UTC without milliseconds: 2026-10-28T00:30:00Z */
 function isoUtc(date: Date): string {
   return date.toISOString().split('.')[0] + 'Z';
 }

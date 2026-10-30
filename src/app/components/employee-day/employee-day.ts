@@ -8,8 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { EmployeeActivity } from '../../models/employee.model';
-import { DaySummary, TimelineItem } from '../../models/day-activity.model';
+import { DaySummary, EmployeeDayData, TimelineItem } from '../../models/day-activity.model';
 import { GraphService } from '../../services/graph';
 import {
   IDLE_GAP_MINUTES,
@@ -29,14 +28,14 @@ import {
   styleUrl: './employee-day.scss',
 })
 export class EmployeeDay implements OnInit {
-  readonly employee = inject<EmployeeActivity>(MAT_DIALOG_DATA);
+  readonly employee = inject<EmployeeDayData>(MAT_DIALOG_DATA);
 
   private graph = inject(GraphService);
   private dialogRef = inject(MatDialogRef<EmployeeDay>);
   private destroyRef = inject(DestroyRef);
 
-  /** Opens on the day of the row that was clicked. */
-  readonly day = signal(startOfDay(new Date(this.employee.loginTime)));
+  /** Opens on the requested day, or today. */
+  readonly day = signal(startOfDay(this.employee.day ?? new Date()));
 
   readonly summary = signal<DaySummary | null>(null);
   readonly loading = signal(true);

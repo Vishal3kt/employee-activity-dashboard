@@ -249,3 +249,20 @@ button.user-profile {
     word-break: break-all;
   }
 }
+
+/* Refresh icon spins while data reloads */
+.spin {
+  animation: header-spin 0.9s linear infinite;
+}
+
+@keyframes header-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}
