@@ -332,7 +332,7 @@ tr.clickable {
 
 td.empty {
   padding: 48px 16px;
-  text-align: center;
+  text-align: center !important;
   color: var(--ink-soft);
 
   mat-icon {

@@ -22,3 +22,20 @@ export const FEATURES = {
    */
   licensedUsersOnly: true,
 };
+
+/** Settings for the failed sign-ins view and the Excel security sheets. */
+export const SECURITY = {
+  /**
+   * Countries where your people normally sign in, as two-letter codes,
+   * e.g. ['IN'] or ['IN', 'US']. Failures from anywhere else are marked
+   * "Unusual country". Leave empty to detect them automatically from
+   * successful sign-ins.
+   */
+  homeCountries: [] as string[],
+
+  /** Mark an IP as "Repeated" after this many suspicious failures. */
+  repeatedIpThreshold: 10,
+
+  /** Mark an account as "Repeated" after this many suspicious failures. */
+  repeatedAccountThreshold: 5,
+};

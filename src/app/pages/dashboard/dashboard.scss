@@ -7,6 +7,27 @@
   padding: 24px;
 }
 
+.stat-link {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: #cfd8dc;
+    box-shadow: 0 4px 14px -8px rgba(15, 23, 42, 0.25);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1f4fd1;
+    outline-offset: 2px;
+  }
+
+  &.alert .sub {
+    color: #b42318;
+  }
+}
+
 /* ---------- Refresh error banner ---------- */
 
 .refresh-error {
@@ -28,6 +49,31 @@
     flex: 1;
     line-height: 1.4;
   }
+}
+
+/* ---------- Page head ---------- */
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  h1 {
+    margin: 0;
+    color: #172033;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.export {
+  --mat-button-outlined-label-text-color: #1f4fd1;
+  --mat-button-outlined-outline-color: #cfd8dc;
+  --mat-button-outlined-container-shape: 8px;
+  --mat-button-outlined-state-layer-color: #1f4fd1;
+  background: #ffffff;
 }
 
 /* ---------- Stats ---------- */
@@ -59,6 +105,22 @@
     font-size: 28px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+  }
+
+  .sub {
+    display: flex;
+    font-weight: 400;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    color: #5a6577;
+    font-size: 12px;
+
+    mat-icon {
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+    }
   }
 
   &.attention dd {

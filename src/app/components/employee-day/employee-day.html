@@ -16,26 +16,52 @@
 
   <!-- Which day -->
   <nav class="day-nav" aria-label="Choose a day">
-    <button mat-icon-button (click)="shiftDay(-1)" aria-label="Previous day">
+    <button
+      mat-icon-button
+      (click)="shiftDay(-1)"
+      [disabled]="isOldest()"
+      aria-label="Previous day"
+    >
       <mat-icon>chevron_left</mat-icon>
     </button>
 
-    <label class="day-picker">
-      <span class="day-text">{{ day() | date: 'EEEE, d MMMM y' }}</span>
-      <span class="window">{{ windowLabel }}</span>
-      <mat-icon>calendar_today</mat-icon>
+    <!-- The whole box opens the calendar -->
+    <div class="day-picker">
+      <button
+        type="button"
+        class="day-button"
+        (click)="openPicker()"
+        aria-haspopup="dialog"
+        [attr.aria-label]="'Change day. Showing ' + (day() | date: 'EEEE d MMMM y')"
+      >
+        <span class="day-text">{{ day() | date: 'EEEE, d MMMM y' }}</span>
+        <span class="window">{{ windowLabel }}</span>
+        <mat-icon>calendar_today</mat-icon>
+      </button>
+
+      <!-- Native calendar, opened by the button above; never clicked directly -->
       <input
+        #dateInput
         type="date"
+        class="native-date"
+        tabindex="-1"
+        aria-hidden="true"
         [value]="dayValue()"
+        [min]="oldestValue"
         [max]="todayValue"
         (change)="pickDate($event)"
-        aria-label="Pick a date"
       />
-    </label>
+    </div>
 
     <button mat-icon-button (click)="shiftDay(1)" [disabled]="isToday()" aria-label="Next day">
       <mat-icon>chevron_right</mat-icon>
     </button>
+
+    @if (isOldest()) {
+      <span class="limit-note"
+        >Oldest available day: logs are kept for {{ retentionDays }} days</span
+      >
+    }
 
     @if (!isToday()) {
       <button mat-button class="today-btn" (click)="goToday()">Today</button>

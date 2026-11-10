@@ -39,11 +39,3 @@ export interface EmployeeRow extends Employee {
   /** Only set when FEATURES.teamsPresence is on. */
   presence?: PresenceState;
 }
-
-/** Minimal sign-in record used to build TodaySummary. */
-export interface SignInLite {
-  userId: string;
-  time: Date;
-  success: boolean;
-  app: string;
-}

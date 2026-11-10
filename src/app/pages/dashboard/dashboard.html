@@ -29,6 +29,20 @@
       </div>
     }
 
+    <!-- Page title and export -->
+    <div class="page-head">
+      <h1>Today, {{ lastUpdated() | date: 'EEEE d MMMM' }}</h1>
+      <button
+        mat-stroked-button
+        class="export"
+        (click)="openExport()"
+        [disabled]="rows().length === 0"
+      >
+        <mat-icon>download</mat-icon>
+        Export to Excel
+      </button>
+    </div>
+
     <!-- Today at a glance -->
     <dl class="stats">
       <div class="stat">
@@ -46,9 +60,25 @@
         <dd>{{ stats().notYet }}</dd>
       </div>
 
-      <div class="stat" [class.alert]="stats().withFailures > 0">
-        <dt>With failed sign-ins</dt>
-        <dd>{{ stats().withFailures }}</dd>
+      <!-- Opens the Failed sign-ins section below -->
+      <div
+        class="stat stat-link"
+        role="link"
+        tabindex="0"
+        aria-label="Go to failed sign-ins"
+        [class.alert]="(failureReport()?.suspiciousAttempts ?? 0) > 0"
+        (click)="scrollToFailures()"
+        (keydown.enter)="scrollToFailures()"
+      >
+        <dt>Failed sign-ins</dt>
+        <dd>
+          {{ failureReport()?.totalAttempts ?? 0 }}
+          <span class="sub">
+            {{ failureReport()?.suspiciousAttempts ?? 0 }} suspicious,
+            {{ failureReport()?.accountsAffected ?? 0 }} accounts
+            <mat-icon>arrow_downward</mat-icon>
+          </span>
+        </dd>
       </div>
 
       <!-- Only shown when FEATURES.teamsPresence is on -->
@@ -64,6 +94,10 @@
         </div>
       }
     </dl>
+
+    @if (failureReport(); as report) {
+      <app-failed-sign-ins [report]="report"></app-failed-sign-ins>
+    }
 
     <app-employee-list [rows]="rows()" [presenceEnabled]="presenceEnabled" (view)="openDay($event)">
     </app-employee-list>

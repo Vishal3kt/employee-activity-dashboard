@@ -11,6 +11,13 @@ export const WORK_END_HOUR = 18; // 6 PM
  */
 export const IDLE_GAP_MINUTES = 90;
 
+/**
+ * How many days of sign-in logs Microsoft Entra ID keeps.
+ * 30 days with Entra ID P1/P2 (needed to read sign-in logs through Graph).
+ * Older days can't be fetched, so the date picker stops here.
+ */
+export const SIGN_IN_RETENTION_DAYS = 30;
+
 /** Background sign-ins to the same app closer than this become one entry. */
 const MERGE_WINDOW_MS = 60 * 60 * 1000;
 

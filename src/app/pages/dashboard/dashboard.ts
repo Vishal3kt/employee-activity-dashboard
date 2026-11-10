@@ -12,7 +12,11 @@ import { Header } from '../../components/header/header';
 import { DashboardLoader } from '../../components/dashboard-loader/dashboard-loader';
 import { EmployeeList } from '../../components/employee-list/employee-list';
 import { EmployeeDay } from '../../components/employee-day/employee-day';
-import { GraphService } from '../../services/graph';
+import { FailedSignIns } from '../../components/failed-sign-ins/failed-sign-ins';
+import { ExportDialog, ExportDialogData } from '../../components/export-dialog/export-dialog';
+import { FailureReport } from '../../models/report.model';
+import { buildFailureReport } from '../../services/sign-in-insights';
+import { GraphService, TeamToday } from '../../services/graph';
 import { AuthService } from '../../services/auth';
 import { EmployeeRow } from '../../models/team.model';
 import { EmployeeDayData } from '../../models/day-activity.model';
@@ -27,7 +31,15 @@ const PRESENCE_REFRESH_MS = 2 * 60 * 1000;
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [DatePipe, Header, DashboardLoader, EmployeeList, MatButtonModule, MatIconModule],
+  imports: [
+    DatePipe,
+    Header,
+    DashboardLoader,
+    EmployeeList,
+    FailedSignIns,
+    MatButtonModule,
+    MatIconModule,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -51,6 +63,9 @@ export class Dashboard implements OnInit {
   readonly refreshError = signal<string | null>(null);
 
   readonly lastUpdated = signal<Date | null>(null);
+
+  /** Today's failed sign-ins, analysed. */
+  readonly failureReport = signal<FailureReport | null>(null);
   readonly stage = this.graph.stage;
 
   readonly stats = computed(() => {
@@ -95,10 +110,7 @@ export class Dashboard implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (rows) => {
-          this.rows.set(rows);
-          this.lastUpdated.set(new Date());
-        },
+        next: (today) => this.apply(today),
         error: (err) => this.error.set(describeLoadError(err)),
       });
   }
@@ -130,12 +142,35 @@ export class Dashboard implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (rows) => {
-          this.rows.set(rows);
-          this.lastUpdated.set(new Date());
-        },
+        next: (today) => this.apply(today),
         error: (err) => this.refreshError.set(describeLoadError(err)),
       });
+  }
+
+  openExport(): void {
+    const data: ExportDialogData = { employees: this.rows() };
+
+    this.dialog.open(ExportDialog, {
+      data,
+      width: '560px',
+      maxWidth: '95vw',
+      autoFocus: 'dialog',
+    });
+  }
+
+  scrollToFailures(): void {
+    document
+      .getElementById('failed-sign-ins')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  private apply(today: TeamToday): void {
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    this.rows.set(today.rows);
+    this.failureReport.set(buildFailureReport(today.todayRecords, midnight, now));
+    this.lastUpdated.set(now);
   }
 
   openDay(row: EmployeeRow): void {

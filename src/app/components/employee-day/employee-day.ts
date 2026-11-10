@@ -1,4 +1,13 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription } from 'rxjs';
@@ -12,6 +21,7 @@ import { DaySummary, EmployeeDayData, TimelineItem } from '../../models/day-acti
 import { GraphService } from '../../services/graph';
 import {
   IDLE_GAP_MINUTES,
+  SIGN_IN_RETENTION_DAYS,
   WORK_END_HOUR,
   WORK_START_HOUR,
   buildDaySummary,
@@ -44,6 +54,14 @@ export class EmployeeDay implements OnInit {
   readonly today = startOfDay(new Date());
   readonly todayValue = toDateInputValue(this.today);
   readonly isToday = computed(() => this.day().getTime() >= this.today.getTime());
+
+  /** Oldest day Microsoft still has sign-in logs for. */
+  readonly oldestDay = addDays(this.today, -SIGN_IN_RETENTION_DAYS);
+  readonly oldestValue = toDateInputValue(this.oldestDay);
+  readonly isOldest = computed(() => this.day().getTime() <= this.oldestDay.getTime());
+  readonly retentionDays = SIGN_IN_RETENTION_DAYS;
+
+  @ViewChild('dateInput') private dateInput?: ElementRef<HTMLInputElement>;
   readonly dayValue = computed(() => toDateInputValue(this.day()));
 
   /** Clock hours in the working window: 6, 7, … 17 */
@@ -70,22 +88,33 @@ export class EmployeeDay implements OnInit {
   }
 
   shiftDay(days: number): void {
-    const next = new Date(this.day());
-    next.setDate(next.getDate() + days);
-    if (next.getTime() > this.today.getTime()) {
-      return;
-    }
-    this.setDay(next);
+    this.setDay(addDays(this.day(), days));
   }
 
   goToday(): void {
     this.setDay(this.today);
   }
 
+  /** Opens the calendar from anywhere on the date box. */
+  openPicker(): void {
+    const input = this.dateInput?.nativeElement;
+    if (!input) {
+      return;
+    }
+
+    try {
+      // Chrome, Edge, Firefox and Safari 16+
+      input.showPicker();
+    } catch {
+      // Older browsers: focusing the field lets the user type or use arrows
+      input.focus();
+    }
+  }
+
   pickDate(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     if (!value) {
-      return;
+      return; // "Clear" in the calendar: keep the current day
     }
     const [y, m, d] = value.split('-').map(Number);
     this.setDay(new Date(y, m - 1, d));
@@ -148,8 +177,27 @@ export class EmployeeDay implements OnInit {
     return `${item.start.getTime()}-${item.app}-${index}`;
   }
 
+  /** Keeps the day between the oldest retained day and today. */
   private setDay(day: Date): void {
-    this.day.set(startOfDay(day));
+    let next = startOfDay(day);
+
+    if (next.getTime() > this.today.getTime()) {
+      next = this.today;
+    }
+    if (next.getTime() < this.oldestDay.getTime()) {
+      next = this.oldestDay;
+    }
+    if (next.getTime() === this.day().getTime() && this.summary()) {
+      return; // same day, already loaded
+    }
+
+    this.day.set(next);
     this.load();
   }
+}
+
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return startOfDay(result);
 }

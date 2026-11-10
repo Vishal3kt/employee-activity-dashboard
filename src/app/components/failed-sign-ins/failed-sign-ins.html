@@ -1,0 +1,158 @@
+<section class="failures" id="failed-sign-ins" aria-labelledby="failures-title">
+  <!-- Heading -->
+  <header class="head">
+    <div>
+      <h2 id="failures-title">Failed sign-ins today</h2>
+      <p class="summary">
+        <strong>{{ report().totalAttempts }}</strong> attempts on
+        <strong>{{ report().accountsAffected }}</strong> accounts.
+        <strong class="suspicious-count">{{ report().suspiciousAttempts }}</strong> look suspicious.
+      </p>
+    </div>
+  </header>
+
+  <!-- Categories -->
+  <ul class="categories" aria-label="Failures by type">
+    @for (c of report().byCategory; track c.key) {
+      <li [class.suspicious]="isSuspicious($any(c.key))">
+        <span class="label">{{ c.label }}</span>
+        <span class="num">{{ c.attempts }}</span>
+      </li>
+    }
+  </ul>
+
+  @if (report().suspiciousAttempts === 0) {
+    <div class="all-clear">
+      <mat-icon>verified_user</mat-icon>
+      <p>
+        No suspicious failures today. The {{ report().totalAttempts }} failures are interruptions or
+        policy blocks, which are normal. Every failure is listed in the Excel export.
+      </p>
+    </div>
+  } @else {
+    <!-- Where from -->
+    <div class="sources">
+      <div class="panel">
+        <h3>Suspicious attempts by country</h3>
+        @if (homeLabel()) {
+          <p class="note">Usual: {{ homeLabel() }}. Other countries are marked.</p>
+        }
+        <ul class="bars">
+          @for (c of report().byCountry; track c.key) {
+            <li [class.unusual]="c.unusual">
+              <span class="name">
+                {{ c.label }}
+                @if (c.unusual) {
+                  <span class="tag">Unusual</span>
+                }
+              </span>
+              <span class="bar"><span [style.width]="barWidth(c.attempts)"></span></span>
+              <span class="num">{{ c.attempts }}</span>
+            </li>
+          } @empty {
+            <li class="empty">No suspicious attempts</li>
+          }
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h3>Top source IPs</h3>
+        <p class="note">Addresses with the most suspicious attempts.</p>
+        <table class="ips">
+          <thead>
+            <tr>
+              <th>IP address</th>
+              <th>Country</th>
+              <th class="r">Attempts</th>
+              <th class="r">Accounts</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ip of topIps(); track ip.ip) {
+              <tr [class.hot]="ip.accounts.length >= 3 || ip.attempts >= 10">
+                <td class="mono">{{ ip.ip }}</td>
+                <td>{{ ip.country }}</td>
+                <td class="r">{{ ip.attempts }}</td>
+                <td class="r" [attr.title]="ip.accounts.join(', ')">{{ ip.accounts.length }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="empty">No suspicious attempts</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Attempts -->
+    <div class="table-scroll">
+      <table class="attempts">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Account</th>
+            <th>Country</th>
+            <th>IP address</th>
+            <th>App</th>
+            <th>What happened</th>
+            <th>Flags</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of visible(); track f.id) {
+            <tr [class.hot]="f.repeatedFromIp || f.repeatedForAccount">
+              <td class="nowrap">{{ f.time | date: 'h:mm a' }}</td>
+              <td>
+                <div class="account">
+                  <strong>{{ f.userName }}</strong>
+                  <span>{{ f.userPrincipalName }}</span>
+                </div>
+              </td>
+              <td class="nowrap">
+                <span [class.unusual-text]="f.unusualCountry">{{ f.country }}</span>
+                @if (f.city) {
+                  <small>{{ f.city }}</small>
+                }
+              </td>
+              <td class="mono nowrap">{{ f.ipAddress || '—' }}</td>
+              <td>{{ f.app }}</td>
+              <td>
+                <span
+                  class="what"
+                  [class.suspicious]="isSuspicious(f.category)"
+                  [attr.title]="f.failureReason || null"
+                >
+                  {{ categoryLabels[f.category] }}
+                </span>
+              </td>
+              <td class="flags">
+                @if (f.repeatedFromIp) {
+                  <span class="flag red">Repeated IP</span>
+                }
+                @if (f.repeatedForAccount) {
+                  <span class="flag red">Repeated account</span>
+                }
+                @if (f.unusualCountry) {
+                  <span class="flag amber">Unusual country</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty">No failed sign-ins</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (hiddenCount() > 0) {
+      <div class="more">
+        <button mat-button (click)="showAll.set(!showAll())">
+          {{ showAll() ? 'Show fewer' : 'Show all ' + list().length }}
+        </button>
+      </div>
+    }
+  }
+</section>

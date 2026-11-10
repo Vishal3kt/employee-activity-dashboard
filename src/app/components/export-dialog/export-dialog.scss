@@ -1,0 +1,278 @@
+:host {
+  --ink: #172033;
+  --ink-soft: #5a6577;
+  --line: #e3e8ec;
+  --mist: #f3f6f8;
+  --accent: #1f4fd1;
+  --ok: #12805c;
+  --fail: #b42318;
+
+  display: block;
+  color: var(--ink);
+
+  --mat-button-filled-container-color: var(--accent);
+  --mat-button-filled-label-text-color: #fff;
+  --mat-button-text-label-text-color: var(--accent);
+  --mat-dialog-container-shape: 12px;
+  --mat-progress-bar-active-indicator-color: var(--accent);
+  --mat-progress-bar-track-color: var(--mist);
+}
+
+h2[mat-dialog-title] {
+  font-weight: 600;
+}
+
+.intro {
+  margin: 0 0 20px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.range {
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  button {
+    appearance: none;
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #cfd8dc;
+    }
+
+    &.selected {
+      border-color: var(--accent);
+      background: rgba(31, 79, 209, 0.06);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+  }
+}
+
+.custom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  input {
+    padding: 8px 10px;
+    border: 1px solid #cfd8dc;
+    border-radius: 8px;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+
+    &:focus {
+      border-color: var(--accent);
+      outline: 2px solid rgba(31, 79, 209, 0.2);
+    }
+  }
+}
+
+.invalid {
+  margin: 8px 0 0;
+  color: var(--fail);
+  font-size: 13px;
+}
+
+.period-summary {
+  margin: 10px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.mode {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.mode-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+
+  &.selected {
+    border-color: var(--accent);
+    background: rgba(31, 79, 209, 0.04);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  input {
+    margin: 3px 0 0;
+    accent-color: var(--accent);
+  }
+
+  strong {
+    display: block;
+    font-size: 14px;
+  }
+
+  small {
+    display: block;
+    margin-top: 2px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+}
+
+.paused {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0 !important;
+  color: #8a5a00;
+  font-size: 13px;
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+}
+
+.stats-line {
+  font-variant-numeric: tabular-nums;
+}
+
+.contents {
+  margin: 0 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+
+  > div {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+}
+
+.hint {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.5;
+
+  mat-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  strong {
+    color: var(--ink);
+  }
+}
+
+.progress {
+  padding: 8px 0 4px;
+
+  p {
+    margin: 0 0 12px;
+  }
+
+  .muted {
+    margin: 12px 0 0;
+  }
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 0;
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+
+  mat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 40px;
+  }
+
+  .ok {
+    color: var(--ok);
+  }
+  .fail {
+    color: var(--fail);
+  }
+}
+
+.muted {
+  color: var(--ink-soft);
+  font-size: 13px;
+}

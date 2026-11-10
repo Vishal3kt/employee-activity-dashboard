@@ -1,0 +1,201 @@
+<h2 mat-dialog-title>Export employee activity</h2>
+
+<mat-dialog-content>
+  @switch (state()) {
+    @case ('choose') {
+      <p class="intro">
+        An Excel file with every employee’s day: first and last sign-in, apps, locations and
+        devices, plus every failed sign-in with its country.
+      </p>
+
+      <fieldset class="range">
+        <legend>Period</legend>
+
+        <div class="presets" role="radiogroup" aria-label="Period">
+          @for (p of presets; track p.value) {
+            <button
+              type="button"
+              role="radio"
+              [attr.aria-checked]="preset() === p.value"
+              [class.selected]="preset() === p.value"
+              (click)="preset.set(p.value)"
+            >
+              {{ p.label }}
+            </button>
+          }
+        </div>
+
+        @if (preset() === 'custom') {
+          <div class="custom">
+            <label>
+              <span>From</span>
+              <input
+                type="date"
+                [value]="customFromValue()"
+                [min]="oldestValue"
+                [max]="todayValue"
+                (change)="setCustomFrom($event)"
+              />
+            </label>
+            <label>
+              <span>To</span>
+              <input
+                type="date"
+                [value]="customToValue()"
+                [min]="oldestValue"
+                [max]="todayValue"
+                (change)="setCustomTo($event)"
+              />
+            </label>
+          </div>
+          @if (!customValid()) {
+            <p class="invalid" role="alert">
+              Choose a From date on or before the To date, within the last {{ retentionDays }} days.
+            </p>
+          }
+        }
+
+        @if (days().length) {
+          <p class="period-summary">
+            @if (days().length === 1) {
+              {{ days()[0] | date: 'EEEE d MMMM y' }} (1 day)
+            } @else {
+              {{ days()[0] | date: 'd MMM' }} to
+              {{ days()[days().length - 1] | date: 'd MMM y' }} ({{ days().length }} days)
+            }
+          </p>
+        }
+      </fieldset>
+
+      <fieldset class="mode">
+        <legend>Data</legend>
+        @for (m of modes; track m.value) {
+          <label class="mode-option" [class.selected]="mode() === m.value">
+            <input
+              type="radio"
+              name="export-mode"
+              [value]="m.value"
+              [checked]="mode() === m.value"
+              (change)="mode.set(m.value)"
+            />
+            <span>
+              <strong>{{ m.title }}</strong>
+              <small>{{ m.text }}</small>
+            </span>
+          </label>
+        }
+      </fieldset>
+
+      <dl class="contents">
+        <div>
+          <dt>Summary</dt>
+          <dd>Totals and how to read the report</dd>
+        </div>
+        <div>
+          <dt>Daily activity</dt>
+          <dd>
+            {{ employeeCount }} employees × {{ days().length }} day{{
+              days().length === 1 ? '' : 's'
+            }}: Windows sign-in, first and last activity, hours with activity{{
+              mode() === 'match-app' ? ', no activity and gaps' : ''
+            }}
+          </dd>
+        </div>
+        <div>
+          <dt>Failed sign-ins</dt>
+          <dd>Every failure with country, IP, reason and attack flags</dd>
+        </div>
+        <div>
+          <dt>Failures by country</dt>
+          <dd>Where suspicious attempts came from</dd>
+        </div>
+        <div>
+          <dt>Failures by IP</dt>
+          <dd>Addresses to block, with the accounts they targeted</dd>
+        </div>
+      </dl>
+
+      <p class="hint">
+        <mat-icon>schedule</mat-icon>
+        <span>
+          @if (estimate()) {
+            <strong>{{ estimate() }}</strong
+            >, based on your last export.
+          } @else if (mode() === 'match-app') {
+            Background sign-ins are most of the data, so this can take several minutes per day.
+          } @else {
+            Usually a few seconds per day.
+          }
+          @if (mode() === 'match-app' && days().length > 3) {
+            For many days, <strong>Faster</strong> is much quicker.
+          }
+        </span>
+      </p>
+    }
+
+    @case ('loading') {
+      <div class="progress">
+        <p>
+          <strong>Reading sign-ins: day {{ done() }} of {{ total() }}</strong>
+        </p>
+        <mat-progress-bar mode="determinate" [value]="percent()"></mat-progress-bar>
+        <p class="muted stats-line">{{ records().toLocaleString() }} sign-ins read</p>
+        @if (pausedFor() > 0) {
+          <p class="paused" role="status">
+            <mat-icon>hourglass_top</mat-icon>
+            Microsoft asked us to slow down. Resuming in {{ pausedFor() }} s…
+          </p>
+        } @else if (timeLeft()) {
+          <p class="muted stats-line">{{ timeLeft() }}</p>
+        }
+        <p class="muted">
+          You can keep this window open and carry on; closing it cancels the export.
+        </p>
+      </div>
+    }
+
+    @case ('building') {
+      <div class="progress">
+        <p><strong>Building the Excel file…</strong></p>
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      </div>
+    }
+
+    @case ('done') {
+      <div class="result">
+        <mat-icon class="ok">check_circle</mat-icon>
+        <p><strong>Your Excel file has downloaded.</strong></p>
+        <p class="muted">Look for it in your browser’s downloads.</p>
+      </div>
+    }
+
+    @case ('error') {
+      <div class="result" role="alert">
+        <mat-icon class="fail">error_outline</mat-icon>
+        <p>{{ error() }}</p>
+      </div>
+    }
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @switch (state()) {
+    @case ('choose') {
+      <button mat-button (click)="close()">Cancel</button>
+      <button mat-flat-button class="primary" (click)="start()" [disabled]="!days().length">
+        <mat-icon>download</mat-icon>
+        Export
+      </button>
+    }
+    @case ('done') {
+      <button mat-flat-button class="primary" (click)="close()">Done</button>
+    }
+    @case ('error') {
+      <button mat-button (click)="close()">Close</button>
+      <button mat-flat-button class="primary" (click)="start()">Try again</button>
+    }
+    @default {
+      <button mat-button (click)="cancel()">Cancel export</button>
+    }
+  }
+</mat-dialog-actions>
